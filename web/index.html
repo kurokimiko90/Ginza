@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>銀座漫遊 · GINZA</title>
+<link rel="stylesheet" href="style.css">
+<script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
+</head>
+<body data-mode="bird">
+<main id="viewport" aria-label="東京銀座互動 3D 城市"></main>
+<div id="labels" class="labels" aria-hidden="true"></div>
+
+<header class="masthead">
+  <div class="brand">
+    <span class="wordmark">GINZA<span class="brand-dot">.</span></span>
+    <div class="brand-copy"><h1>銀座漫遊</h1><p>TOKYO · 35.671° N / 139.766° E</p></div>
+  </div>
+  <div class="header-actions"><button id="sceneFocus" class="postcard-button" aria-pressed="false">專注看景</button><button id="postcard" class="postcard-button">保存明信片 ↗</button><button id="helpToggle" class="icon-button" aria-label="顯示操作說明">?</button></div>
+</header>
+
+<nav class="panel view-switch" aria-label="視角切換">
+  <div class="segmented">
+    <button id="bird" class="selected" aria-pressed="true">城市鳥瞰</button>
+    <button id="walk" aria-pressed="false">街道漫遊</button>
+  </div>
+  <div class="eyebrow">地標</div>
+  <div id="landmarks" class="landmarks"></div>
+  <p id="landmarkNote" class="landmark-note" aria-live="polite"></p>
+  <div class="eyebrow">一鍵看景 · 不用找路</div>
+  <div class="landmarks"><button id="visitFlowers">🌿 街邊花壇</button><button id="visitNight">◈ 夜景燈箱</button></div>
+  <button id="nextStop" class="tour-next">下一景點 →</button>
+</nav>
+
+<aside class="panel environment">
+  <div class="eyebrow">光線與時間</div>
+  <div class="sun-line"><span id="timeLabel">15:00</span><span id="lightLabel">午後日光</span></div>
+  <input id="time" type="range" min="5" max="22" value="15" step="0.25" aria-label="時間">
+  <div class="range-labels"><span>05:00</span><span>22:00</span></div>
+  <div class="time-presets" aria-label="光線預設"><button data-hour="14" aria-pressed="false">日光</button><button data-hour="17" aria-pressed="false">傍晚</button><button data-hour="20" aria-pressed="false">夜景</button></div>
+  <label class="shadow-option"><input id="shadows" type="checkbox" checked> 建築陰影</label>
+</aside>
+
+<aside class="panel location">
+  <div class="location-top"><span id="modeLabel">城市鳥瞰</span><span class="north">N ↑</span></div>
+  <canvas id="minimap" aria-label="目前位置小地圖"></canvas>
+  <div class="location-bottom"><span id="position">—</span><span id="fps">—</span></div>
+</aside>
+
+<div id="crosshair" aria-hidden="true"></div>
+<div id="streetPlate" class="street-plate" role="status" hidden></div>
+
+<section id="walkPrompt" class="panel walk-prompt" hidden>
+  <div class="eyebrow">中央通りから歩く</div>
+  <h2>開始走走</h2>
+  <p>滑鼠轉頭、WASD 行走，Shift 加速。<br>按 Esc 放開滑鼠。</p>
+  <button id="enterWalk" class="primary">進入漫遊 →</button>
+  <small>無法鎖定滑鼠時，可按住畫面拖曳轉頭。</small>
+</section>
+
+<section id="help" class="panel help" hidden>
+  <div class="help-heading"><h2>怎麼探索？</h2><button id="closeHelp" class="icon-button" aria-label="關閉說明">×</button></div>
+  <dl>
+    <dt>城市鳥瞰</dt><dd>拖曳旋轉 · 滾輪縮放 · 右鍵平移</dd>
+    <dt>街道漫遊</dt><dd>拖曳轉頭 · Q/E 轉向 · WASD／方向鍵行走 · Shift 加速 · Esc 停止</dd>
+    <dt>輕鬆看景</dt><dd>一鍵看花壇／夜景；下一景點直接定位並對準。自動前進免長按，左右轉向按鈕或 Q/E 控制方向，Esc 停止。自動前進不是自動尋路。</dd>
+    <dt>地標</dt><dd>鳥瞰時飛到地標上空；漫遊時移到能看見地標的街道</dd>
+    <dt>時間</dt><dd>預設為東京現在時間，可拖到傍晚看銀座夜景</dd>
+  </dl>
+  <p>建築外觀為程序化示意，九成以上的高度依占地面積估算。地面為平面，道路寬度與標線為示意，並非實景。</p>
+</section>
+
+<div id="loading" class="loading">正在建構銀座…</div>
+<div id="toast" class="toast" role="status"></div>
+
+<div id="touchControls" class="touch-controls">
+  <button data-move="KeyW" aria-label="向前">↑</button>
+  <div><button data-move="KeyA" aria-label="向左">←</button><button data-move="KeyS" aria-label="向後">↓</button><button data-move="KeyD" aria-label="向右">→</button></div>
+</div>
+<div class="stroll-controls" id="strollControls" aria-label="輕鬆漫遊">
+  <button data-turn="1" aria-label="向左轉">↶ 左轉</button>
+  <button id="autoWalk" aria-pressed="false">▶ 自動前進</button>
+  <button data-turn="-1" aria-label="向右轉">右轉 ↷</button>
+  <small>遇障礙自動停 · Esc 停止 · 不是自動尋路</small>
+</div>
+
+<footer>
+  <div class="controls-hint" id="hint"><span class="hint-dot"></span> 拖曳旋轉 <b>·</b> 滾輪縮放 <b>·</b> 右鍵平移</div>
+  <div class="credits"><span id="stats"></span> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a> · <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noopener">ODbL</a></div>
+</footer>
+<script type="module" src="app.js"></script>
+</body>
+</html>
