@@ -1,6 +1,7 @@
 // 由 city.json / roads.json 產生建築網格與地面貼圖。
 import * as THREE from 'three';
 import { SIX_NIGHT, PLACE_NIGHT } from './photo-reference.js';
+import { curbTriangles, isMajorRoad } from './road-markings.js';
 
 const FLOOR = 3.4;
 const BAY = 2.6;
@@ -309,7 +310,7 @@ export function drawGroundCanvas(roads, buildings, bounds, pixels, { forMinimap 
   const order = [...roads].sort((a, b) => a.width - b.width);
   for (const road of order) {
     if (!forMinimap && road.crossing) continue;
-    ctx.strokeStyle = forMinimap ? (road.width >= 11 ? '#5b5f66' : '#3a3d42') : (ROAD_COLOR[road.kind] || '#3c3e42');
+    ctx.strokeStyle = forMinimap ? (isMajorRoad(road) ? '#5b5f66' : '#3a3d42') : (ROAD_COLOR[road.kind] || '#3c3e42');
     ctx.lineWidth = Math.max(forMinimap ? 1 : 1.5, road.width * scale);
     tracePath(ctx, road.points, px);
     ctx.stroke();
@@ -318,7 +319,7 @@ export function drawGroundCanvas(roads, buildings, bounds, pixels, { forMinimap 
     ctx.setLineDash([3 * scale, 5 * scale]);
     ctx.strokeStyle = 'rgba(235,235,225,0.8)';
     ctx.lineWidth = Math.max(1, 0.2 * scale);
-    for (const road of order.filter((r) => r.width >= 11)) {
+    for (const road of order.filter(isMajorRoad)) {
       tracePath(ctx, road.points, px);
       ctx.stroke();
     }
@@ -421,17 +422,18 @@ function flatMaterial(color, offset, roughness = 0.9) {
   });
 }
 
-// 現有 OSM 步道上的示意石材鋪裝，不增加步道範圍或推測路緣／盲道位置。
+// 現有 OSM 步道上的示意石材鋪裝，不增加步道範圍或推測盲道位置。
+// 色調依 2019 銀座通り實照（Commons: Ginza-dōri.jpg）調為冷淺灰花崗岩，非米黃。
 function pavingTexture() {
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = 256;
   const ctx = canvas.getContext('2d'), rand = mulberry(81);
-  ctx.fillStyle = '#a59f94'; ctx.fillRect(0, 0, 256, 256);
+  ctx.fillStyle = '#9c9f9e'; ctx.fillRect(0, 0, 256, 256);
   for (let row = 0; row < 8; row++) {
     for (let col = -1; col < 5; col++) {
       const x = col * 64 + (row % 2) * 32;
-      const tone = 187 + Math.floor(rand() * 17);
-      ctx.fillStyle = `rgb(${tone + 8},${tone + 5},${tone})`;
+      const tone = 182 + Math.floor(rand() * 18);
+      ctx.fillStyle = `rgb(${tone},${tone + 2},${tone + 2})`;
       ctx.fillRect(x + 1, row * 32 + 1, 62, 30);
       ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.fillRect(x + 1, row * 32 + 1, 62, 1);
     }
@@ -482,7 +484,7 @@ export function buildRoads(roads) {
       }
     } else if (WALKWAY_KINDS.has(road.kind)) pushRibbon(walkway, road.points, Math.max(1.6, road.width), 0.035);
     else pushRibbon(asphalt, road.points, road.width, 0.03);
-    if (road.width >= 11 && !WALKWAY_KINDS.has(road.kind)) pushDashes(lines, road.points, 0.04);
+    if (isMajorRoad(road) && !WALKWAY_KINDS.has(road.kind)) pushDashes(lines, road.points, 0.04);
   }
   const materials = [flatMaterial('#e0d2b9', -1), flatMaterial('#637384', -2, 0.8), flatMaterial('#fff3d9', -3, 0.6)];
   // 與柏油相同的深度偏移，避免不同 polygon offset 在遠處再次蓋住步道。
@@ -492,12 +494,15 @@ export function buildRoads(roads) {
   materials[0].map = pavingTexture();
   materials[0].bumpMap = materials[0].map;
   materials[0].bumpScale = 0.018;
-  materials[1].color.set('#707982');
+  materials[1].color.set('#8a9198'); // 實照柏油為淺灰，非深黑。
   materials[1].map = asphaltTexture();
   materials[1].bumpMap = materials[1].map;
   materials[1].bumpScale = 0.024;
   const group = new THREE.Group();
   group.add(flatMesh(walkway, materials[0]), flatMesh(asphalt, materials[1]), flatMesh(lines, materials[2]));
+  // 實照可見的淺灰花崗岩路緣，只畫在上下行分開路段的人行道側。
+  const curb = flatMaterial('#c4c6c2', -3, 0.9);
+  group.add(flatMesh(curbTriangles(roads), curb));
   return {
     group,
     setNight(night) {

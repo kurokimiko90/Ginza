@@ -6,6 +6,8 @@
 
 > 本專案參考 [GAT-Taiwan-Pound](https://github.com/POUND0423/GAT-Taiwan-Pound)（信義區版）的構想，但程式碼全部重新撰寫，未複製其原始碼（該專案未授予開源授權）。
 
+接手文件（wiki，純 HTML，直接打開即可）：[docs/wiki/index.html](docs/wiki/index.html)
+
 ## 功能
 
 - 街景質感：細顆粒柏油、石材鋪裝、叶簇樹冠、比例修正的橱窗與室內窗格；局部夜間暖光及「專注看景」模式。實作範圍、驗收與限制見 [街景質感優化](docs/STREET_QUALITY.md)。
@@ -13,7 +15,8 @@
 - 實景校正：以 [和光官方規格](https://www.wako.co.jp/f/clock_tower/) 與 [GINZA SIX 官方建築介紹](https://ginza6.tokyo/magazine/detail/125505/) 校正兩處地標；以原始 OSM 過街標記繪製斑馬線。已撤下未逐點核實的樹木、燈柱與實體藍色街道名牌。參考範圍與仍未核對的部分見 [實景參考清單](docs/STREET_REFERENCES.md)。
 
 - 美術：保留 3D 動畫化材質、柔和光影與人物，建築色板調整為較接近實景的石材與玻璃色系；和光改為方形石塔與阿拉伯數字鐘面，屋頂／塔體／避雷針採官方高度。
-- 三種通用窗格間距、只在臨街可見外牆配置店面、圓潤車身與人物五官；中央通り參考官方桂樹及樹下花壇，加入 32 處近似綠化點（非實測逐株位置），使用實例網格繪製1.1×2.2m長條低邊框、覆土、地被、細葉草、五瓣花與樹冠。花壇擴大後重新避讓步道、燈柱與店面；未核實的復古街燈仍不放置。
+- 三種通用窗格間距、只在臨街可見外牆配置店面、圓潤車身與人物五官；中央通り參考官方桂樹及樹下花壇，加入 104 處近似綠化點（官方 136 株；非實測逐株位置），四個植栽區按官方設計主題區分植物，使用實例網格繪製1.1×2.2m長條低邊框、覆土、地被、細葉草、五瓣花與樹冠。花壇擴大後重新避讓步道、燈柱與店面；未核實的復古街燈仍不放置。
+- 店內縱深：橱窗玻璃後以 interior mapping 呈現約 3.6 m 深的店內（後牆、側牆、地板、天花板與兩層陳列剖面，隨視角產生透視），不增加建築幾何。12 種業態（精品服飾、珠寶鐘錶、洋菓子／和菓子、喫茶、餐廳酒吧、化妝品、書店文具、畫廊、便利店、生活雜貨、銀行窗口、美髮）各有典型陳列：櫥窗人台、玻璃展示櫃、冷藏蛋糕櫃、吧台與吊燈、沿窗雜誌架等。業態取自鄰近 OSM 店家分類，無點位的牆面依目測比例抽樣；相鄰同業態分節合併為一間店。陳列為同業態常見構成，不是逐店實景。
 - 近距離街景：現有 OSM 步道加上世界座標石材鋪裝；通用店面按約 5.5 m 分節，交替圖樣、玻璃入口與把手、石材分隔條。入口與鋪裝是示意設計，非實測；未核實的通用遮陽棚不再生成，不推測信號燈、路緣或盲道位置。
 - 地標觀察提示、日光／傍晚／夜景快捷切換；「保存明信片」匯出目前視角的 PNG（只有場景，不含介面）。
 - 輕鬆看景：首頁「街邊花壇／夜景燈箱」一鍵切換至街道觀景點並對準；「下一景點」輪換四個視角。自動前進免長按W，遇阻擋／Esc／失焦停止（非尋路）；屏幕左右轉向與Q/E、短促平滑加減速、碰撞小步進；沒有改成第三人稱，也沒有鏡頭搖晃。
@@ -36,6 +39,7 @@
   - 袖看板：同一棟樓有多家店時，直立招牌逐層列出店名
   - 和光鐘樓：位於中央通り×晴海通り交差點的和光轉角，四面鐘的指針跟隨時間滑桿
 - 夜間：窗格、櫥窗、招牌、鐘面發光，車燈變亮，路面有路燈反光
+- 固定時間：網址加 `?hour=13`（5–22）以指定開場時間，例如 `?hour=20#@-533,618,215,-4`
 - 分享視角：網址加 `#@x,z,方位角[,仰角]`（公尺／度，方位 0 = 北、90 = 東）直接在該處進入漫遊，例如 `#@-41,0,0,28` 從交差點仰望和光
 - 建築陰影開關、小地圖（位置與朝向）、經緯度、FPS
 - 手機：觸控方向鍵、窄螢幕版面
@@ -75,7 +79,7 @@ python3 scripts/build_city.py   # → web/assets/city.json、roads.json
 ```text
 city.json   { origin:[lat,lon], bounds:[minX,minZ,maxX,maxZ],
               landmarks:[{label, id, target:[x,z], height}],
-              signs:[{text, kind, x, z, nx, nz, room, top, slot, prio}],
+              signs:[{text, kind, cat?, x, z, nx, nz, room, top, slot, prio}],   // cat：OSM shop/amenity 原值
               boards:[{names[], x, z, nx, nz, top}],
               streetSigns:[{name, en, x, z, dx, dz}], streets:[{name, en, x, z}],
               clock:{x, z, base, face:[x,z]},
@@ -90,6 +94,7 @@ node tests/test_collision.mjs
 node tests/test_decor.mjs
 node tests/test_references.mjs
 node tests/test_shop_layout.mjs
+node tests/test_shop_types.mjs
 node tests/test_night_style.mjs
 node tests/test_road_layout.mjs
 node tests/test_infrastructure.mjs
@@ -100,7 +105,7 @@ python3 tests/test_build_city.py
 涵蓋碰撞規則（牆內／外、邊界、中庭、架空建築、沿牆滑動、最近可站立點），以及真實資料中每個地標的觀賞點：可站立、不貼牆（≥12 m）、視線不被其他建築遮擋。
 街景測試另外檢查配置可重現、道路淨空、小物碰撞與地標觀賞點保留。
 實景校正測試涵蓋官方高度、不覆寫 OSM 原始資料、過街標記與寬度解析，以及裁剪後的欄位保留。
-店面分節測試檢查完整覆蓋、相鄰圖樣變化、穩定生成與無效長度。
+店面分節測試檢查完整覆蓋、相鄰圖樣變化、穩定生成與無效長度；店內業態測試檢查分類對應、可重現抽樣、就近招牌比對與同業態合併。
 
 ## 目錄
 
@@ -113,6 +118,11 @@ web/app.js              場景、視角切換、地標、小地圖、輸入
 web/city.js             建築網格合併、程序化窗格、地面貼圖、道路帶狀面
 web/streetscape.js      店面櫥窗、遮陽棚、招牌圖集
 web/shop-layout.js      店面分節與圖樣（純資料）
+web/shop-types.js       OSM 分類→店內業態、同業態分節合併（純資料）
+web/shop-interiors.js   店內 interior mapping 著色器與圖集
+web/shop-paint-kit.js   店內圖集繪製工具與共用家具輪廓
+web/shop-paint-retail.js  物販類陳列（服飾、珠寶、化妝品、書店、畫廊、雜貨）
+web/shop-paint-food.js  餐飲與服務類陳列（甜點、喫茶、餐廳、便利店、銀行、美髮）
 web/lightboxes.js       合併燈箱外殼與局部柔光
 web/night-style.js      燈箱光色選擇（純資料）
 web/life.js             車流與人流（道路圖、InstancedMesh）、車輛模型

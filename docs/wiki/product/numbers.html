@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>規模與數字 — 銀座 3D 漫遊</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-active="product-numbers" data-depth="1">
+<div class="layout">
+  <aside class="sidebar"></aside>
+  <main class="main">
+    <header class="page-head">
+      <div class="crumb">產品 · 數字</div>
+      <h1>規模與數字</h1>
+      <p class="lede">可量化的規模，方便判斷改動影響範圍。數字來自程式常數與資料檔，不是效能基準。</p>
+    </header>
+<h2>解決什麼問題</h2><p>改動前需要知道「量有多大」：例如新增一種店內業態，會影響多少面牆；加人流會不會拖慢。</p><h2>怎麼處理</h2><table><thead><tr><th>項目</th><th>數字</th><th>來源</th></tr></thead><tbody><tr><td>建築</td><td>2,548 棟</td><td>city.json buildings</td></tr><tr><td>店家／設施點位</td><td>1,174 筆（OSM 抓取）</td><td>work/ginza_poi.json</td></tr><tr><td>招牌資料</td><td>1,257 筆（頂部 149）</td><td>city.json signs</td></tr><tr><td>畫面上招牌上限</td><td>橫式 320 + 直式 192，最多實際放 512</td><td>招牌圖集容量</td></tr><tr><td>袖看板</td><td>177 塊</td><td>city.json boards</td></tr><tr><td>車輛／行人</td><td>170 / 2,200</td><td>web/life.js 常數</td></tr><tr><td>店內業態</td><td>12 種，每種 6 個面</td><td>web/shop-types.js</td></tr><tr><td>綠化點</td><td>104 處（官方 136 株）</td><td>README</td></tr><tr><td>地圖範圍</td><td>緯度 35.6650–35.6775、經度 139.7590–139.7720</td><td>scripts/fetch_osm.py</td></tr><tr><td>自動測試</td><td>12 個 Node 測試 + 1 個 Python 測試</td><td>tests/</td></tr></tbody></table><h2>考慮了哪些情況</h2><table><thead><tr><th>情境</th><th>影響</th></tr></thead><tbody><tr><td>招牌超過 512 塊</td><td>頂部招牌優先，再依離主要道路距離；遠處小店不顯示</td></tr><tr><td>OSM 店家分類分布</td><td>餐廳 335、咖啡 120、便利店 59、服飾 56、珠寶 28…（決定店內業態的比例）</td></tr></tbody></table><div class="warn-box"><div class="title">業主確認區</div>沒有正式的效能基準。介面右下角 FPS 為瞬時值，不能當效能結論；若要比較效能，需另定固定視角與設備。</div>
+    <div class="footer"><span>銀座 3D 漫遊 · 接手文件</span><span>最後更新：2026-10-11</span></div>
+  </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+</body>
+</html>

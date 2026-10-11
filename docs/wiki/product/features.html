@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>功能一覽 — 銀座 3D 漫遊</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-active="product-features" data-depth="1">
+<div class="layout">
+  <aside class="sidebar"></aside>
+  <main class="main">
+    <header class="page-head">
+      <div class="crumb">產品 · 功能</div>
+      <h1>功能一覽</h1>
+      <p class="lede">使用者能看到、能操作的東西。每項標明「實景參考」或「示意」。</p>
+    </header>
+<h2>解決什麼問題</h2><p>接手時最常問的是「這功能在畫面哪裡、是真的還是畫出來的」。本頁逐項列出，並附截圖。</p><h2>怎麼處理</h2><table><thead><tr><th>功能</th><th>使用者看到什麼</th><th>真實程度</th></tr></thead><tbody><tr><td>城市鳥瞰</td><td>拖曳旋轉、滾輪縮放（朝游標方向）、右鍵平移；浮出街名</td><td>建築外形來自 OSM；高度多為估算</td></tr><tr><td>街道漫遊</td><td>WASD／方向鍵、Shift 加速、滑鼠轉頭；碰撞沿牆滑動</td><td>碰撞以建築外形計算</td></tr><tr><td>輕鬆看景</td><td>一鍵到「街邊花壇／夜景燈箱」；自動前進、遇阻擋停止</td><td>觀景點為程式挑選，非尋路</td></tr><tr><td>地標定位</td><td>飛到和光等 4 處上空或街上最佳觀看點</td><td>和光、GINZA SIX 依官方資料校正</td></tr><tr><td>店面與店內</td><td>約 5.5 m 一節的櫥窗；玻璃後可看到 12 種業態的店內陳列</td><td>業態取自鄰近 OSM 店家分類；陳列為同業態典型構成</td></tr><tr><td>招牌</td><td>OSM 真實店名：橫式、直式、大樓頂部、多租戶袖看板</td><td>店名真實；招牌位置為點位推算</td></tr><tr><td>花壇與行道樹</td><td>中央通り 104 處綠化點、四區不同花色</td><td>參考官方植栽主題；非逐株實測</td></tr><tr><td>日夜</td><td>05:00–22:00 滑桿與日光／傍晚／夜景快捷鍵</td><td>太陽位置為近似計算；夜光為靜態近似</td></tr><tr><td>明信片</td><td>把目前視角存成 PNG（不含介面）</td><td>—</td></tr></tbody></table><figure class="shot"><img src="../screenshots/overview/01-bird-view.jpg" alt="城市鳥瞰" loading="lazy">
+<figcaption class="cap"><b>要看什麼</b>：傍晚 19:30 的鳥瞰，浮出街名標籤，右下小地圖。<br><b>常見問題</b>：截圖為 2026-10-09 版本，建築配色已調整，外觀可能不同。<br><b>下一步</b>：<a href="../workflow/page-load.html">② 網頁載入與組場景</a></figcaption></figure><div class="shots"><figure class="shot"><img src="../screenshots/functional/shops/01-oblique-day.jpg" alt="斜看店面" loading="lazy">
+<figcaption class="cap"><b>要看什麼</b>：玻璃後的服飾店與化妝品店有縱深，斜看時後牆與側牆會移動。<br><b>常見問題</b>：若玻璃後是一片白或黑，見故障排查「店內一片白」。<br><b>下一步</b>：<a href="../workflow/shops.html">③ 店面與店內縱深</a></figcaption></figure><figure class="shot"><img src="../screenshots/functional/walk/01-easy-explore.jpg" alt="輕鬆看景" loading="lazy">
+<figcaption class="cap"><b>要看什麼</b>：頂部提示「已到達街邊花壇」，下方左轉／自動前進／右轉。<br><b>常見問題</b>：自動前進遇到牆會停，這是設計而不是當機。<br><b>下一步</b>：<a href="../ops/troubleshooting.html">故障排查</a></figcaption></figure><figure class="shot"><img src="../screenshots/functional/landmarks/01-wako.jpg" alt="和光鐘樓" loading="lazy">
+<figcaption class="cap"><b>要看什麼</b>：石材立面、鐘面指針隨時間滑桿轉動。<br><b>常見問題</b>：截圖為 2026-10-09 版本。<br><b>下一步</b>：<a href="../tech/stack.html">技術棧</a></figcaption></figure><figure class="shot"><img src="../screenshots/functional/greenery/01-flowerbed-day.jpg" alt="中央通り花壇" loading="lazy">
+<figcaption class="cap"><b>要看什麼</b>：長條低邊框花壇、樹冠與步道避讓。<br><b>常見問題</b>：花壇擋路時，見「想加 X 改哪」的綠化段。<br><b>下一步</b>：<a href="../ops/upgrade-hooks.html">想加 X 改哪</a></figcaption></figure></div><h2>考慮了哪些情況</h2><table><thead><tr><th>情境</th><th>系統怎麼應對</th></tr></thead><tbody><tr><td>滑鼠無法鎖定（Pointer Lock 被擋）</td><td>改用拖曳轉頭</td></tr><tr><td>使用者想專心看景</td><td>「專注看景」隱藏面板，保留停止自動前進的控制</td></tr><tr><td>標籤彼此重疊或擋住介面</td><td>街名與地標標籤自動避讓</td></tr></tbody></table><h2>為什麼這樣設計</h2><div class="tip"><div class="title">「示意」要說出來</div>README、docs 與本 wiki 都標出哪些是示意：曾經放過未核實的路燈、遮陽棚與藍色名牌，後來撤下。接手時新增細節也請比照：查得到來源才當「實景」，否則寫明示意。</div>
+    <div class="footer"><span>銀座 3D 漫遊 · 接手文件</span><span>最後更新：2026-10-11</span></div>
+  </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>④ 時間與夜景 — 銀座 3D 漫遊</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-active="workflow-time" data-depth="1">
+<div class="layout">
+  <aside class="sidebar"></aside>
+  <main class="main">
+    <header class="page-head">
+      <div class="crumb">流程 · ④</div>
+      <h1>④ 時間與夜景</h1>
+      <p class="lede">時間滑桿改變太陽、天色、窗光、招牌與店內亮度。</p>
+    </header>
+<h2>解決什麼問題</h2><p>銀座的魅力一半在夜晚。但上千盞真實燈光即時計算太重，因此用「預先畫好的光照圖＋發光材質」近似夜景。</p><h2>怎麼處理</h2><table><thead><tr><th>元素</th><th>白天</th><th>夜晚</th></tr></thead><tbody><tr><td>太陽</td><td>依東京緯度與當天日期估算方位與高度</td><td>降到地平線下，改用夜間補光</td></tr><tr><td>建築窗格</td><td>反光玻璃</td><td>約六成窗格亮燈，部分拉窗簾</td></tr><tr><td>店內</td><td>約夜間一半亮度＋玻璃反光</td><td>全亮，依業態暖光或冷白光</td></tr><tr><td>招牌與燈箱</td><td>微亮</td><td>主要光源，袖看板合併金屬外殼與柔光</td></tr><tr><td>地面</td><td>石材鋪裝</td><td>路燈、招牌、櫥窗前出現暖色光池（7 m 以上不受影響）</td></tr></tbody></table><figure class="shot"><img src="../screenshots/functional/time/01-street-night.jpg" alt="夜間街景" loading="lazy">
+<figcaption class="cap"><b>要看什麼</b>：地面光池、窗格點燈、招牌為主要亮點。<br><b>常見問題</b>：截圖為 2026-10-09，店面尚無店內縱深。<br><b>下一步</b>：<a href="../ops/troubleshooting.html">故障排查</a></figcaption></figure><figure class="shot"><img src="../screenshots/functional/signs/01-lightbox-night.jpg" alt="夜間燈箱" loading="lazy">
+<figcaption class="cap"><b>要看什麼</b>：袖看板與橫式招牌的光暈層次。<br><b>常見問題</b>：同上，為舊版店面外觀。<br><b>下一步</b>：<a href="../ops/upgrade-hooks.html">想加 X 改哪</a></figcaption></figure><h2>考慮了哪些情況</h2><table><thead><tr><th>情境</th><th>怎麼應對</th></tr></thead><tbody><tr><td>想分享固定時刻的畫面</td><td><code>?hour=20</code>；也可用面板「日光／傍晚／夜景」</td></tr><tr><td>牆角溢光</td><td>已知限制：光照圖不算建築遮擋</td></tr><tr><td>人車、樹木等實例化物件</td><td>不注入光照圖，避免材質相容問題</td></tr></tbody></table><div class="tip"><div class="title">為什麼這樣設計</div>一張 2048² 光照圖的成本與路燈數量無關；代價是沒有即時陰影與反射。文件中已明確標示「不是即時照明」。</div>
+    <div class="footer"><span>銀座 3D 漫遊 · 接手文件</span><span>最後更新：2026-10-11</span></div>
+  </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+</body>
+</html>

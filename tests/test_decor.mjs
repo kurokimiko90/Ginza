@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { planDecor, segmentDistance } from '../web/decor-layout.js';
+import { bedAxis, planDecor, segmentDistance } from '../web/decor-layout.js';
 import { createCollider } from '../web/collision.js';
 import { fitCentralRoads } from '../web/road-layout.js';
-import { BED, bedPlants } from '../web/flowerbeds.js';
+import { BED, ZONES, bedPlants } from '../web/flowerbeds.js';
 
 const city = JSON.parse(readFileSync(new URL('../web/assets/city.json', import.meta.url)));
 const roads = fitCentralRoads(JSON.parse(readFileSync(new URL('../web/assets/roads.json', import.meta.url))));
@@ -13,10 +13,14 @@ for (const tree of items.filter((p) => p.type === 'tree')) {
   const plants = bedPlants(tree);
   assert.equal(plants.length, 24);
   assert.deepEqual(plants, bedPlants(tree));
-  assert.ok(plants.some((p) => p.kind === 'grass') && plants.some((p) => p.kind === 'flower'));
+  assert.ok(plants.some((p) => p.kind === 'flower'));
+  const signature = ['grass', 'flower', 'spike', 'sasa'][tree.zone];
+  assert.ok(plants.some((p) => p.kind === signature), `${ZONES[tree.zone].name} 有該區特徵植物`);
+  assert.equal(plants.some((p) => p.potted), tree.zone === 3, '只有 SASA deco 使用盆栽高低差');
   assert.ok(plants.every((p) => Math.hypot(p.x - tree.x, p.z - tree.z) + 0.16 < tree.radius), '植物含花瓣不超出花壇碰撞範圍');
 }
-assert.ok(items.length > 0 && items.length < 136, '有來源的中央通り近似綠化，並非宣稱逐株復刻');
+assert.equal(new Set(items.map((p) => p.zone)).size, 4, '四個官方植栽區都有出現');
+assert.ok(items.length > 0 && items.length <= 136, '有來源的中央通り近似綠化，並非宣稱逐株復刻');
 assert.ok(items.every((p) => p.positionStatus === 'approximate' && p.source === 'https://www.ginza.jp/topics/16958'));
 assert.deepEqual(items, planDecor(city, roads), '配置應可重現');
 assert.deepEqual(planDecor(city, []), [], '沒有道路時不產生街景');
@@ -29,7 +33,10 @@ for (const p of items) {
   for (const r of roads) for (let i = 1; i < r.points.length; i++) {
     const distance = segmentDistance(p.x, p.z, r.points[i - 1], r.points[i]);
     if (r.crossing) assert.ok(distance >= 7, '過街線保留空隙');
-    else if (['footway', 'path', 'pedestrian', 'steps'].includes(r.kind)) assert.ok(distance >= p.radius + 0.6, '步道中心保留1.2m淨通道');
+    else if (['footway', 'path', 'pedestrian', 'steps'].includes(r.kind)) {
+      const axisDistance = Math.min(...bedAxis(p.x, p.z, p.heading).map(([px, pz]) => segmentDistance(px, pz, r.points[i - 1], r.points[i])));
+      assert.ok(axisDistance >= BED.width / 2 + 0.6, '步道中心保留1.2m淨通道');
+    }
     else if (r.kind !== 'cycleway') assert.ok(distance >= r.width / 2 + p.radius + 0.2, '不侵入車道');
   }
 }

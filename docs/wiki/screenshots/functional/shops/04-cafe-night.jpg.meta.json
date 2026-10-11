@@ -1,0 +1,10 @@
+{
+  "captured": "2026-10-10T17:50:26Z",
+  "sources": [
+    "web/shop-paint-food.js",
+    "web/shop-interiors.js"
+  ],
+  "url": "http://127.0.0.1:8770/?hour=20#@-533.0,618.1,215,-4",
+  "viewport": "1280x720",
+  "method": "headless-chrome / 既有驗證截圖 work/shop-interior-cafe-night.jpg"
+}

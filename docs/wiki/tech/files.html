@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>檔案地圖 — 銀座 3D 漫遊</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-active="tech-files" data-depth="1">
+<div class="layout">
+  <aside class="sidebar"></aside>
+  <main class="main">
+    <header class="page-head">
+      <div class="crumb">技術 · 檔案</div>
+      <h1>檔案地圖</h1>
+      <p class="lede">每個檔案負責什麼。標「純資料」的模組不依賴瀏覽器，可在 Node 測試。</p>
+    </header>
+<h2>解決什麼問題</h2><p>約 30 個模組、單檔多在 300 行內。找「這個東西在哪改」時先看本表，再看 <a href="../ops/upgrade-hooks.html">想加 X 改哪</a>。</p><table><thead><tr><th>檔案</th><th>分類</th><th>職責</th></tr></thead><tbody><tr><td><code>scripts/fetch_osm.py</code></td><td>資料</td><td>Overpass 抓建築／道路與店家點位</td></tr><tr><td><code>scripts/build_city.py</code></td><td>資料</td><td>轉公尺座標、估高度、找地標、輸出 JSON</td></tr><tr><td><code>scripts/signage.py</code></td><td>資料</td><td>招牌、袖看板、街名、和光鐘樓位置；保留店家分類 cat</td></tr><tr><td><code>web/app.js</code></td><td>入口</td><td>組場景、鳥瞰／漫遊切換、輸入、時間、小地圖、明信片</td></tr><tr><td><code>web/city.js</code></td><td>建築</td><td>建築網格、窗格貼圖、地標立面、地面與道路</td></tr><tr><td><code>web/streetscape.js</code></td><td>店面</td><td>店面分節、門框貼圖、招牌圖集；串接店內</td></tr><tr><td><code>web/shop-layout.js</code></td><td>店面</td><td>店面分節（純資料）</td></tr><tr><td><code>web/shop-types.js</code></td><td>店內</td><td>OSM 分類 → 業態、就近招牌、同業態合併（純資料）</td></tr><tr><td><code>web/shop-interiors.js</code></td><td>店內</td><td>室內貼圖著色器、圖集組裝、業態光色</td></tr><tr><td><code>web/shop-paint-kit.js</code></td><td>店內</td><td>公尺座標畫筆、人台／桌椅／層架等共用輪廓</td></tr><tr><td><code>web/shop-paint-retail.js</code></td><td>店內</td><td>服飾、珠寶、化妝品、書店、畫廊、雜貨陳列</td></tr><tr><td><code>web/shop-paint-food.js</code></td><td>店內</td><td>甜點、喫茶、餐廳、便利店、銀行、美髮陳列</td></tr><tr><td><code>web/lightboxes.js / night-style.js</code></td><td>招牌</td><td>燈箱外殼、柔光與光色</td></tr><tr><td><code>web/signage.js</code></td><td>招牌</td><td>袖看板、和光鐘樓</td></tr><tr><td><code>web/life.js / people.js</code></td><td>人車</td><td>道路網、車流人流、行人動畫</td></tr><tr><td><code>web/decor-layout.js / decor.js</code></td><td>街具</td><td>行道樹花箱位置與繪製、道路淨空</td></tr><tr><td><code>web/flowerbeds.js / bed-zones.js</code></td><td>綠化</td><td>花壇尺寸、四區配植</td></tr><tr><td><code>web/infrastructure-layout.js / infrastructure.js</code></td><td>街具</td><td>路燈、信號柱</td></tr><tr><td><code>web/road-layout.js / road-markings.js</code></td><td>道路</td><td>中央通り車道校正、路緣與標線</td></tr><tr><td><code>web/references.js / photo-reference.js</code></td><td>實景</td><td>官方高度、立面與夜照參數</td></tr><tr><td><code>web/surface-lighting.js</code></td><td>光</td><td>夜間光照圖與鋪裝圖樣注入</td></tr><tr><td><code>web/sky.js</code></td><td>光</td><td>太陽位置、天色</td></tr><tr><td><code>web/collision.js / movement.js</code></td><td>漫遊</td><td>碰撞、觀景點搜尋、移動</td></tr><tr><td><code>web/server.cjs</code></td><td>工具</td><td>本機靜態伺服器</td></tr><tr><td><code>tests/*.mjs, tests/test_build_city.py</code></td><td>測試</td><td>純資料模組與轉換腳本</td></tr><tr><td><code>docs/*.md</code></td><td>文件</td><td>街景品質、實景參考清單、授權來源</td></tr></tbody></table><div class="tip"><div class="title">慣例</div>新功能先寫「純資料」模組（位置、分類、規則）加 Node 測試，再寫繪製模組。這樣規則能測，繪製只負責畫。</div>
+    <div class="footer"><span>銀座 3D 漫遊 · 接手文件</span><span>最後更新：2026-10-11</span></div>
+  </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+</body>
+</html>

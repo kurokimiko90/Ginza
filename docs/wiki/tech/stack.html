@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>技術棧與設計取捨 — 銀座 3D 漫遊</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-active="tech-stack" data-depth="1">
+<div class="layout">
+  <aside class="sidebar"></aside>
+  <main class="main">
+    <header class="page-head">
+      <div class="crumb">技術 · 技術棧</div>
+      <h1>技術棧與設計取捨</h1>
+      <p class="lede">選了什麼、為什麼、放棄了什麼。</p>
+    </header>
+<h2>解決什麼問題</h2><p>接手者需要知道哪些限制是刻意的（例如沒有 npm），避免「順手現代化」破壞零建置的特性。</p><table><thead><tr><th>層</th><th>使用</th><th>為什麼</th></tr></thead><tbody><tr><td>3D</td><td>Three.js r180（隨附在 web/vendor）</td><td>成熟、不需打包；以 importmap 載入</td></tr><tr><td>網頁</td><td>原生 ES modules、Canvas 2D 繪製貼圖</td><td>零建置；貼圖程序化產生，無版權素材</td></tr><tr><td>資料處理</td><td>Python 3 標準庫</td><td>抓取與轉換一次性執行，不需套件</td></tr><tr><td>本機伺服器</td><td>Node 內建 http（web/server.cjs）</td><td>只聽 127.0.0.1、擋 ../ 路徑</td></tr><tr><td>測試</td><td>Node assert（.mjs）＋ Python unittest</td><td>純資料模組可在 Node 直接測</td></tr><tr><td>部署</td><td>任何靜態主機（如 GitHub Pages）</td><td>web/ 內全為相對路徑</td></tr></tbody></table><h2>關鍵技術手法</h2><table><thead><tr><th>手法</th><th>用在哪</th><th>白話</th></tr></thead><tbody><tr><td>幾何合併</td><td>建築、店面、招牌</td><td>同材質的東西併成一大塊，一次畫完</td></tr><tr><td>實例化繪製</td><td>行人、車輛、樹、花</td><td>同一個模型畫幾千次只算一次</td></tr><tr><td>頂點著色器動畫</td><td>行人擺臂擺腿</td><td>動作在顯示卡上算，不佔主程式</td></tr><tr><td>室內貼圖（interior mapping）</td><td>店內縱深</td><td>在玻璃上用視線算出虛擬房間</td></tr><tr><td>靜態光照圖</td><td>夜間地面與低層牆面</td><td>把燈光預先畫成一張圖</td></tr></tbody></table><h2>考慮了哪些情況</h2><table><thead><tr><th>想做的事</th><th>目前結論</th></tr></thead><tbody><tr><td>加 npm / 打包工具</td><td>不建議：失去零建置；若真需要，先另開分支評估</td></tr><tr><td>接 PLATEAU 精確建築</td><td>未接入；文件不宣稱達到 PLATEAU 精度</td></tr><tr><td>即時陰影與反射</td><td>只有建築陰影開關；店內與光照圖不吃陰影</td></tr></tbody></table><div class="tip"><div class="title">為什麼這樣設計</div>目標是「五年後打開還能跑」。每多一個依賴，就多一個會壞的理由。</div>
+    <div class="footer"><span>銀座 3D 漫遊 · 接手文件</span><span>最後更新：2026-10-11</span></div>
+  </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+</body>
+</html>

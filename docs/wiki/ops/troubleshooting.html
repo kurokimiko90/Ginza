@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>故障排查 — 銀座 3D 漫遊</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-active="ops-trouble" data-depth="1">
+<div class="layout">
+  <aside class="sidebar"></aside>
+  <main class="main">
+    <header class="page-head">
+      <div class="crumb">運營 · 排查</div>
+      <h1>故障排查</h1>
+      <p class="lede">依「看到什麼」找原因。</p>
+    </header>
+<table><thead><tr><th>看到的症狀</th><th>可能原因</th><th>怎麼處理</th></tr></thead><tbody><tr><td>畫面停在「載入失敗」</td><td>JSON 不存在或伺服器沒開</td><td>確認 <code>node web/server.cjs</code> 正在跑；確認 web/assets/ 兩份 JSON 存在</td></tr><tr><td>空白頁、主控台 module 錯誤</td><td>用 file:// 開啟</td><td>改用本機伺服器網址</td></tr><tr><td>店內一片白／一片黑</td><td>店內圖集或著色器編譯失敗</td><td>看主控台 WebGL 錯誤；確認 shop-interiors.js 的業態數與 shop-types.js 一致</td></tr><tr><td>店名是珠寶店，店內卻是服飾</td><td>6 m 內最近的同向點位是另一家店，或該店 OSM 無分類</td><td>查 city.json 該招牌的 cat；必要時調整比對距離</td></tr><tr><td>一間店被切成好幾個小隔間</td><td>相鄰分節業態不同</td><td>確認附近點位分類；無點位的牆面應共用同業態</td></tr><tr><td>招牌缺很多</td><td>超過 512 塊上限</td><td>頂部與臨大街優先，屬預期行為</td></tr><tr><td>重建資料後地標不見</td><td>build_city.py 找不到地標名稱</td><td>檢查 LANDMARKS 名稱是否與最新 OSM 一致</td></tr><tr><td>Overpass 抓取失敗</td><td>公開節點忙碌</td><td>稍後重試；腳本會輪流試 4 個節點</td></tr><tr><td>無法轉頭</td><td>Pointer Lock 被瀏覽器擋</td><td>改用拖曳；或先點一下畫面</td></tr><tr><td>自動前進突然停止</td><td>遇到阻擋／按 Esc／視窗失焦</td><td>設計如此，再按一次自動前進</td></tr></tbody></table><div class="tip"><div class="title">除錯順序</div>先看主控台錯誤 → 再看 JSON 資料 → 最後才看繪製程式。資料錯了，畫面一定錯。</div>
+    <div class="footer"><span>銀座 3D 漫遊 · 接手文件</span><span>最後更新：2026-10-11</span></div>
+  </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+</body>
+</html>

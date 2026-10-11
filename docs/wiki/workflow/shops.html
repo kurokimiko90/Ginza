@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>③ 店面與店內縱深 — 銀座 3D 漫遊</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-active="workflow-shops" data-depth="1">
+<div class="layout">
+  <aside class="sidebar"></aside>
+  <main class="main">
+    <header class="page-head">
+      <div class="crumb">流程 · ③</div>
+      <h1>③ 店面與店內縱深</h1>
+      <p class="lede">沿街一樓的櫥窗，以及玻璃後隨視角變化的店內陳列。2026-10-11 新增。</p>
+    </header>
+<div class="legend">
+  <span class="item"><span class="swatch" style="background:var(--human)"></span>人工（維護者／使用者操作）</span>
+  <span class="item"><span class="swatch" style="background:var(--auto)"></span>自動腳本</span>
+  <span class="item"><span class="swatch" style="background:var(--llm)"></span>LLM（本專案未使用）</span>
+  <span class="item"><span class="swatch" style="background:var(--store);border:1px solid var(--line)"></span>檔案 / 儲存</span>
+  <span class="item"><span class="swatch" style="background:var(--extern)"></span>外部 API</span>
+</div><div class="flow"><svg viewBox="0 0 1080 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="店面業態決定流程"><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L0,10 L10,5 z" fill="#5A5248"/></marker></defs>
+<style>.lab{font:600 15px "Noto Sans JP",sans-serif}.sub{font:400 12.5px "Noto Sans JP",sans-serif;opacity:.85}.cap{font:700 13px "Noto Sans JP",sans-serif;fill:#5A5248;letter-spacing:.1em}
+.nh{fill:#A89889}.na{fill:#F5C842}.ns{fill:#E8D5B7;stroke:#C9B89A}.ne{fill:#5A5248}.arrow{stroke:#5A5248;stroke-width:1.6;fill:none}</style>
+<rect class="ns" x="10" y="30" width="150" height="50" rx="6"/><text x="85.0" y="52" class="lab" fill="#5A5248" text-anchor="middle">臨街外牆</text><text x="85.0" y="70" class="sub" fill="#5A5248" text-anchor="middle">沒有相鄰建築擋住</text>
+<rect class="na" x="200" y="30" width="150" height="50" rx="6"/><text x="275.0" y="52" class="lab" fill="#5A5248" text-anchor="middle">切成約 5.5 m 分節</text><text x="275.0" y="70" class="sub" fill="#5A5248" text-anchor="middle">每節一扇門＋櫥窗</text>
+<rect class="ns" x="200" y="130" width="150" height="50" rx="6"/><text x="275.0" y="152" class="lab" fill="#5A5248" text-anchor="middle">OSM 店家分類</text><text x="275.0" y="170" class="sub" fill="#5A5248" text-anchor="middle">shop / amenity</text>
+<rect class="na" x="390" y="30" width="170" height="50" rx="6"/><text x="475.0" y="52" class="lab" fill="#5A5248" text-anchor="middle">決定業態</text><text x="475.0" y="70" class="sub" fill="#5A5248" text-anchor="middle">6 m 內同向店家優先</text>
+<rect class="na" x="600" y="30" width="170" height="50" rx="6"/><text x="685.0" y="52" class="lab" fill="#5A5248" text-anchor="middle">同業態相鄰合併</text><text x="685.0" y="70" class="sub" fill="#5A5248" text-anchor="middle">一間店只有兩端側牆</text>
+<rect class="na" x="810" y="30" width="180" height="50" rx="6"/><text x="900.0" y="52" class="lab" fill="#5A5248" text-anchor="middle">玻璃後畫出店內</text><text x="900.0" y="70" class="sub" fill="#5A5248" text-anchor="middle">隨視角改變透視</text>
+<rect class="nh" x="810" y="130" width="180" height="50" rx="6"/><text x="900.0" y="152" class="lab" fill="white" text-anchor="middle">使用者走過</text><text x="900.0" y="170" class="sub" fill="white" text-anchor="middle">看見縱深與陳列</text>
+<path class="arrow" d="M160 53 L198 53" marker-end="url(#arrow)"/><path class="arrow" d="M350 53 L388 53" marker-end="url(#arrow)"/><path class="arrow" d="M350 153 L475 78" marker-end="url(#arrow)"/><path class="arrow" d="M560 53 L598 53" marker-end="url(#arrow)"/><path class="arrow" d="M770 53 L808 53" marker-end="url(#arrow)"/><path class="arrow" d="M900 78 L900 128" marker-end="url(#arrow)"/>
+</svg><div class="caption">沒有店家資料的牆面，整面牆共用一個依比例抽樣的業態，避免一間店被切成不同業態的小隔間。</div></div><h2>解決什麼問題</h2><p>過去櫥窗是一張平面圖，走近或斜看都像貼紙。真的挖空建築做室內，會讓上千面牆的幾何變複雜。現在的做法是：玻璃只是一片面，但畫面上會「算出」玻璃後一間約 3.6 m 深的房間，斜看時後牆、側牆、地板與家具會正確移動。</p><h2>怎麼處理</h2><div class="cards"><div class="card"><div class="label">房間</div><div class="value">3.6 m 深</div><div class="desc">高 3.5 m；寬＝店面寬，寬店每約 5.5 m 重複一組陳列</div></div><div class="card"><div class="label">層次</div><div class="value">後牆 + 2 層</div><div class="desc">櫥窗陳列（0.85 m）＋ 櫃台桌子（2.05 m）</div></div><div class="card"><div class="label">業態</div><div class="value">12 種</div><div class="desc">依附近 OSM 店家分類，或整面牆抽樣</div></div><div class="card"><div class="label">額外幾何</div><div class="value">0</div><div class="desc">仍是一片玻璃；不能走進店內</div></div></div><table><thead><tr><th>業態</th><th>OSM 分類例</th><th>典型陳列（參考銀座同業態常見擺放）</th></tr></thead><tbody><tr><td>精品服飾</td><td>clothes, shoes, bag</td><td>櫥窗兩側人台、中央摺疊台、後牆燈箱壁龕放包、掛衣桿</td></tr><tr><td>珠寶鐘錶</td><td>jewelry, watches</td><td>柱形玻璃罩展示台、腰高亮燈玻璃櫃、壁面燈箱、水晶吊燈</td></tr><tr><td>甜點</td><td>confectionery, bakery, deli</td><td>全寬冷藏玻璃櫃兩層蛋糕、禮盒層架、後方暖簾</td></tr><tr><td>喫茶</td><td>cafe, fast_food</td><td>窗邊小圓桌曲木椅、吧台咖啡機、黑板菜單、吊燈</td></tr><tr><td>餐廳酒吧</td><td>restaurant, bar, pub</td><td>白桌布雙人桌、背光酒架、吧台高腳椅</td></tr><tr><td>化妝品</td><td>beauty, chemist</td><td>白色試用島台、色號格架、品牌燈箱</td></tr><tr><td>書店文具</td><td>books, stationery</td><td>高書架、平台疊書、窗邊筆記本陳列</td></tr><tr><td>畫廊</td><td>gallery, art, museum</td><td>白牆掛畫與投射燈、長凳、小雕塑</td></tr><tr><td>便利店</td><td>convenience, supermarket</td><td>沿窗雜誌架、貨架端面、後方飲料冷藏櫃</td></tr><tr><td>生活雜貨</td><td>gift, houseware, knives</td><td>階梯陳列台、木層架陶器、刀具有孔板</td></tr><tr><td>銀行窗口</td><td>bank, travel_agency</td><td>窗口櫃台與螢幕、等候椅、ATM</td></tr><tr><td>美髮</td><td>hairdresser</td><td>鏡台燈條、背向街道的美髮椅</td></tr></tbody></table><div class="shots"><figure class="shot"><img src="../screenshots/functional/shops/02-jewelry-day.jpg" alt="珠寶店白天" loading="lazy">
+<figcaption class="cap"><b>要看什麼</b>：玻璃櫃在前、壁面燈箱在後，兩層有前後遮擋。<br><b>常見問題</b>：店名與業態對不上時，可能是 6 m 內有別家店的點位。<br><b>下一步</b>：<a href="../ops/upgrade-hooks.html">想加 X 改哪</a></figcaption></figure><figure class="shot"><img src="../screenshots/functional/shops/03-convenience-day.jpg" alt="便利店白天" loading="lazy">
+<figcaption class="cap"><b>要看什麼</b>：多個分節合成一間店，只有兩端有側牆。<br><b>常見問題</b>：若每節各自有側牆，代表相鄰分節業態不同。<br><b>下一步</b>：<a href="../tech/files.html">檔案地圖</a></figcaption></figure><figure class="shot"><img src="../screenshots/functional/shops/04-cafe-night.jpg" alt="喫茶夜間" loading="lazy">
+<figcaption class="cap"><b>要看什麼</b>：暖色光、吊燈、吧台與窗邊座位。<br><b>常見問題</b>：夜間太亮或太暗：調整店內日夜亮度係數。<br><b>下一步</b>：<a href="../ops/troubleshooting.html">故障排查</a></figcaption></figure><figure class="shot"><img src="../screenshots/functional/shops/01-oblique-day.jpg" alt="斜看" loading="lazy">
+<figcaption class="cap"><b>要看什麼</b>：斜看時後牆與側牆位移，呈現縱深。<br><b>常見問題</b>：非常貼近斜看時，家具是薄片。<br><b>下一步</b>：<a href="day-night.html">④ 時間與夜景</a></figcaption></figure></div><h2>考慮了哪些情況</h2><table><thead><tr><th>情境</th><th>系統怎麼應對</th></tr></thead><tbody><tr><td>附近沒有店家點位</td><td>整面牆共用一個業態，依目測比例抽樣（服飾最多，其次喫茶、珠寶…）；不抽便利店、美髮這類需要明確資料的業態</td></tr><tr><td>同一面牆有兩家不同店</td><td>依各分節最近的店家決定；不同業態之間有側牆隔開</td></tr><tr><td>店面很窄（< 5.5 m）</td><td>取陳列中段，不把家具壓扁</td></tr><tr><td>店面很寬</td><td>每約 5.5 m 重複一組陳列，不把家具拉長</td></tr><tr><td>和光、GINZA SIX、GINZA PLACE</td><td>不套用通用店面，由實景參考立面處理</td></tr><tr><td>白天 vs 夜晚</td><td>白天店內約為夜間亮度一半並帶玻璃反光；便利店／銀行偏冷白光</td></tr></tbody></table><div class="tip"><div class="title">為什麼這樣設計</div>這種「在玻璃上算出房間」的做法是遊戲常用的室內貼圖技巧：成本跟店面數量無關、不改建築外形、一次繪製。代價是不能進店、店內不接收建築陰影，近距離斜看時家具是平面。</div><h2>截圖清單（給維護者）</h2><table><thead><tr><th>截圖</th><th>網址參數</th><th>對應源檔案</th></tr></thead><tbody><tr><td>shops/01-oblique-day</td><td><code>?hour=13#@-92,60,170,-3</code></td><td>web/shop-interiors.js, web/shop-paint-retail.js, web/streetscape.js</td></tr><tr><td>shops/02-jewelry-day</td><td><code>?hour=13#@-423.1,121.9,131,-4</code></td><td>web/shop-paint-retail.js, web/shop-interiors.js</td></tr><tr><td>shops/03-convenience-day</td><td><code>?hour=13#@98.0,-469.3,200,-4</code></td><td>web/shop-paint-food.js, web/shop-types.js</td></tr><tr><td>shops/04-cafe-night</td><td><code>?hour=20#@-533.0,618.1,215,-4</code></td><td>web/shop-paint-food.js, web/shop-interiors.js</td></tr></tbody></table>
+    <div class="footer"><span>銀座 3D 漫遊 · 接手文件</span><span>最後更新：2026-10-11</span></div>
+  </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+</body>
+</html>

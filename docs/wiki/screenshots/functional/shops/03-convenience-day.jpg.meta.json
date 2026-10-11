@@ -1,0 +1,10 @@
+{
+  "captured": "2026-10-10T17:50:26Z",
+  "sources": [
+    "web/shop-paint-food.js",
+    "web/shop-types.js"
+  ],
+  "url": "http://127.0.0.1:8770/?hour=13#@98.0,-469.3,200,-4",
+  "viewport": "1280x720",
+  "method": "headless-chrome / 既有驗證截圖 work/shop-interior-convenience-day.jpg"
+}

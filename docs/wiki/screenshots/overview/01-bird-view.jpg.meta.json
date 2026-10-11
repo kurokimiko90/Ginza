@@ -1,0 +1,10 @@
+{
+  "captured": "2026-10-09T13:49:56Z",
+  "sources": [
+    "web/city.js",
+    "web/app.js"
+  ],
+  "url": "http://127.0.0.1:8770/",
+  "viewport": "1280x720",
+  "method": "headless-chrome / 既有驗證截圖 work/ginza-bird.png"
+}

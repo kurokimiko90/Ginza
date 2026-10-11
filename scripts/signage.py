@@ -114,6 +114,8 @@ def shop_signs(buildings, roads, pois):
         used[(b["id"], k)] = slot + 1
         kind = tags.get("shop") and "shop" or tags.get("amenity") or tags.get("tourism") or "shop"
         sign = make_sign(text, kind, b, ring, k, slot)
+        # 原始 OSM 分類，前端用來挑選室內陳列類型（kind 仍維持既有語意）。
+        sign["cat"] = tags.get("shop") or tags.get("amenity") or tags.get("tourism") or "shop"
         sign["prio"] = round(main_street_distance(sign["x"], sign["z"], main_roads), 1)
         signs.append(sign)
     signs.sort(key=lambda s: s["prio"])

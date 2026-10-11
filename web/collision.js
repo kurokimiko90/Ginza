@@ -55,7 +55,14 @@ export function createCollider(buildings, bounds, obstacles = []) {
 
   function blocked(x, z) {
     if (x <= bounds[0] || z <= bounds[1] || x >= bounds[2] || z >= bounds[3]) return true;
-    return buildingAt(x, z) !== null || obstacles.some((p) => Math.abs(x - p.x) <= p.radius && Math.abs(z - p.z) <= p.radius);
+    return buildingAt(x, z) !== null || obstacles.some((p) => insideObstacle(p, x, z));
+  }
+
+  // 有 halfWidth/halfLength 的長條花壇按實際朝向判定；其餘小物維持方形半徑。
+  function insideObstacle(p, x, z) {
+    if (!p.halfWidth || !p.halfLength) return Math.abs(x - p.x) <= p.radius && Math.abs(z - p.z) <= p.radius;
+    const c = Math.cos(p.heading || 0), s = Math.sin(p.heading || 0), dx = x - p.x, dz = z - p.z;
+    return Math.abs(dx * c - dz * s) <= p.halfWidth && Math.abs(dx * s + dz * c) <= p.halfLength;
   }
 
   // 以圓周 8 點近似玩家半徑

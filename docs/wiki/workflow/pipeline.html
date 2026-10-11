@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>端到端流程 — 銀座 3D 漫遊</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-active="workflow-pipeline" data-depth="1">
+<div class="layout">
+  <aside class="sidebar"></aside>
+  <main class="main">
+    <header class="page-head">
+      <div class="crumb">流程 · 總覽</div>
+      <h1>端到端流程</h1>
+      <p class="lede">從公開地圖資料到使用者畫面的五步。只有第一步需要網路與人工。</p>
+    </header>
+<div class="legend">
+  <span class="item"><span class="swatch" style="background:var(--human)"></span>人工（維護者／使用者操作）</span>
+  <span class="item"><span class="swatch" style="background:var(--auto)"></span>自動腳本</span>
+  <span class="item"><span class="swatch" style="background:var(--llm)"></span>LLM（本專案未使用）</span>
+  <span class="item"><span class="swatch" style="background:var(--store);border:1px solid var(--line)"></span>檔案 / 儲存</span>
+  <span class="item"><span class="swatch" style="background:var(--extern)"></span>外部 API</span>
+</div><div class="flow"><svg viewBox="0 0 1080 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="資料到畫面的端到端流程"><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L0,10 L10,5 z" fill="#5A5248"/></marker></defs>
+<style>.lab{font:600 15px "Noto Sans JP",sans-serif}.sub{font:400 12.5px "Noto Sans JP",sans-serif;opacity:.85}.cap{font:700 13px "Noto Sans JP",sans-serif;fill:#5A5248;letter-spacing:.1em}
+.nh{fill:#A89889}.na{fill:#F5C842}.ns{fill:#E8D5B7;stroke:#C9B89A}.ne{fill:#5A5248}.arrow{stroke:#5A5248;stroke-width:1.6;fill:none}</style>
+<text x="95" y="24" class="cap" text-anchor="middle">① 取得</text><text x="315" y="24" class="cap" text-anchor="middle">② 轉換</text>
+<text x="535" y="24" class="cap" text-anchor="middle">③ 靜態檔</text><text x="755" y="24" class="cap" text-anchor="middle">④ 組場景</text><text x="975" y="24" class="cap" text-anchor="middle">⑤ 漫遊</text>
+<rect class="nh" x="25" y="40" width="140" height="50" rx="6"/><text x="95.0" y="62" class="lab" fill="white" text-anchor="middle">維護者執行</text><text x="95.0" y="80" class="sub" fill="white" text-anchor="middle">偶爾，資料要更新時</text>
+<rect class="ne" x="25" y="120" width="140" height="50" rx="6"/><text x="95.0" y="142" class="lab" fill="white" text-anchor="middle">OpenStreetMap</text><text x="95.0" y="160" class="sub" fill="white" text-anchor="middle">Overpass（4 備援）</text>
+<rect class="na" x="245" y="120" width="140" height="50" rx="6"/><text x="315.0" y="142" class="lab" fill="#5A5248" text-anchor="middle">建築／道路／招牌</text><text x="315.0" y="160" class="sub" fill="#5A5248" text-anchor="middle">轉成公尺座標</text>
+<rect class="ns" x="465" y="120" width="140" height="50" rx="6"/><text x="535.0" y="142" class="lab" fill="#5A5248" text-anchor="middle">city.json</text><text x="535.0" y="160" class="sub" fill="#5A5248" text-anchor="middle">roads.json（約 1 MB）</text>
+<rect class="na" x="685" y="120" width="140" height="50" rx="6"/><text x="755.0" y="142" class="lab" fill="#5A5248" text-anchor="middle">瀏覽器即時生成</text><text x="755.0" y="160" class="sub" fill="#5A5248" text-anchor="middle">建築、店面、人車、光</text>
+<rect class="nh" x="905" y="120" width="140" height="50" rx="6"/><text x="975.0" y="142" class="lab" fill="white" text-anchor="middle">使用者</text><text x="975.0" y="160" class="sub" fill="white" text-anchor="middle">鳥瞰／街道漫遊</text>
+<path class="arrow" d="M95 86 L95 118" marker-end="url(#arrow)"/><path class="arrow" d="M165 143 L243 143" marker-end="url(#arrow)"/><path class="arrow" d="M385 143 L463 143" marker-end="url(#arrow)"/><path class="arrow" d="M605 143 L683 143" marker-end="url(#arrow)"/><path class="arrow" d="M825 143 L903 143" marker-end="url(#arrow)"/>
+<text x="755" y="200" class="sub" fill="#5A5248" text-anchor="middle">每次開網頁都重新生成，不存模型檔</text>
+<text x="315" y="200" class="sub" fill="#5A5248" text-anchor="middle">高度缺漏時依占地面積估算</text>
+</svg><div class="caption">只有 ① 需要網路與人工；②③ 的結果已放在專案內，④⑤ 在使用者瀏覽器內完成，沒有後端服務。</div></div><h2>解決什麼問題</h2><p>3D 城市通常依賴大型模型檔或伺服器。本專案把「資料轉換」與「畫面生成」分開：轉換一次、結果放進專案；畫面每次在瀏覽器裡現做。</p><h2>每一步做什麼</h2><table><thead><tr><th>步驟</th><th>誰做</th><th>何時</th><th>詳細</th></tr></thead><tbody><tr><td>① 取得</td><td><span class="badge human">人工</span> 觸發 <span class="badge extern">外部</span></td><td>想更新地圖時</td><td><a href="data-rebuild.html">重建地圖資料</a></td></tr><tr><td>② 轉換</td><td><span class="badge auto">自動</span></td><td>緊接 ①</td><td><a href="data-rebuild.html">重建地圖資料</a></td></tr><tr><td>③ 靜態檔</td><td><span class="badge store">儲存</span></td><td>隨專案提交</td><td><a href="../tech/data-schema.html">資料格式</a></td></tr><tr><td>④ 組場景</td><td><span class="badge auto">自動</span></td><td>每次開網頁</td><td><a href="page-load.html">網頁載入</a>、<a href="shops.html">店面</a>、<a href="day-night.html">日夜</a></td></tr><tr><td>⑤ 漫遊</td><td><span class="badge human">使用者</span></td><td>—</td><td><a href="../product/features.html">功能一覽</a></td></tr></tbody></table><h2>考慮了哪些情況</h2><table><thead><tr><th>情境</th><th>怎麼應對</th></tr></thead><tbody><tr><td>Overpass API 忙碌或失敗</td><td>依序嘗試 4 個公開節點</td></tr><tr><td>只想補缺的檔案</td><td><code>fetch_osm.py --skip-existing</code></td></tr><tr><td>離線開發</td><td>② 只讀本機 work/ 的原始資料，不需網路</td></tr></tbody></table><div class="tip"><div class="title">為什麼這樣設計</div>把可重複、耗時的轉換放在 Python 腳本，網頁只負責呈現：資料出錯時看 JSON 就能定位，不必在瀏覽器裡除錯。</div>
+    <div class="footer"><span>銀座 3D 漫遊 · 接手文件</span><span>最後更新：2026-10-11</span></div>
+  </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+</body>
+</html>

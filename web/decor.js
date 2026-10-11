@@ -1,5 +1,8 @@
 import * as THREE from 'three';
 import { BED, bedPlants } from './flowerbeds.js';
+import { buildZoneFeatures, POT_HEIGHT } from './bed-zones.js';
+
+const CANOPY = Object.freeze({ base: 2.4, top: 6.6, radius: 1.35, clusters: 44 });
 
 // 每種零件共用一個 InstancedMesh；夜間以發光燈罩和地面光暈替代大量點光源。
 export function buildDecor(items) {
@@ -7,9 +10,13 @@ export function buildDecor(items) {
   const trees = items.filter((p) => p.type === 'tree'), lamps = items.filter((p) => p.type === 'lamp');
   const stone = new THREE.MeshStandardMaterial({ color: '#aaa79e', roughness: 0.9 });
   const soil = new THREE.MeshStandardMaterial({ color: '#5b4636', roughness: 1 });
-  const wood = new THREE.MeshStandardMaterial({ color: '#97684f', roughness: 0.95 });
+  const trunk = new THREE.MeshStandardMaterial({ color: '#7d746b', roughness: 0.95 });
   const leaf = new THREE.MeshStandardMaterial({ color: '#8fab75', roughness: 0.9, emissive: '#355335', emissiveIntensity: 0 });
   const flowers = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.8, emissive: '#645b51', emissiveIntensity: 0 });
+  // 植栽帶依四區給不同葉色；樹冠仍用 leaf。
+  const bedLeaf = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.9, emissive: '#2c4630', emissiveIntensity: 0 });
+  const willow = new THREE.MeshStandardMaterial({ color: '#7d6a45', roughness: 0.95 });
+  const pot = new THREE.MeshStandardMaterial({ color: '#8a5a42', roughness: 0.85 });
   const pollen = new THREE.MeshStandardMaterial({ color: '#d4ad57', roughness: 0.8 });
   const metal = new THREE.MeshStandardMaterial({ color: '#3e6470', roughness: 0.45, metalness: 0.2 });
   const glow = new THREE.MeshStandardMaterial({ color: '#fff1cb', emissive: '#ffbd66', emissiveIntensity: 0.15, roughness: 0.35 });
@@ -25,9 +32,10 @@ export function buildDecor(items) {
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
       if (material === leaf) mesh.setColorAt(i, new THREE.Color().setHSL(0.21 + (i % 4) * 0.018, 0.3, 0.4 + (i % 3) * 0.035));
+      if (material === bedLeaf) mesh.setColorAt(i, new THREE.Color(p.leafColor || '#8fab75').offsetHSL((i % 5 - 2) * 0.008, 0, (i % 3 - 1) * 0.04));
       if (material === flowers) mesh.setColorAt(i, new THREE.Color(p.flowerColor || '#ede8dc'));
     });
-    mesh.castShadow = material === wood || material === stone || material === metal || (material === leaf && (at[1] > 2 || points.some(p => p.yOffset > 2)));
+    mesh.castShadow = material === trunk || material === willow || material === stone || material === metal || (material === leaf && (at[1] > 2 || points.some(p => p.yOffset > 2)));
     mesh.receiveShadow = true;
     mesh.computeBoundingSphere();
     group.add(mesh);
@@ -39,15 +47,16 @@ export function buildDecor(items) {
     part(trees, new THREE.BoxGeometry(BED.width - 0.14, 0.16, 0.07), stone, [0, 0.12, side * (BED.length - 0.07) / 2]);
   }
   part(trees, new THREE.BoxGeometry(BED.width - 0.14, 0.05, BED.length - 0.14), soil, [0, 0.10, 0]);
-  part(trees, new THREE.CylinderGeometry(0.09, 0.16, 4.3, 10), wood, [0, 2.25, 0]);
-  // Open, asymmetrical clustered foliage, preserving the animation-like silhouette.
+  // 2019 年植栽的幼年桂樹（實照）：細直灰褐主幹，樹冠自約 2.4m 起呈直立橢圓，非高幹頂冠。
+  part(trees, new THREE.CylinderGeometry(0.06, 0.12, 5.6, 8), trunk, [0, 2.9, 0]);
   // All clusters share one mesh; no per-tree draw calls or photographic alpha cards.
-  const clusters = trees.flatMap((tree, t) => Array.from({ length: 38 }, (_, i) => {
+  const clusters = trees.flatMap((tree, t) => Array.from({ length: CANOPY.clusters }, (_, i) => {
     const angle = i * 2.399963 + t * 0.7;
-    const layer = i % 5, reach = 0.55 + (i % 7) * 0.14;
+    const h = (i + 0.5) / CANOPY.clusters; // 0 底部 → 1 頂部
+    const reach = CANOPY.radius * Math.sin(Math.PI * (0.12 + h * 0.8)) * (0.55 + (i % 5) * 0.11);
     return { ...tree, x: tree.x + Math.cos(angle) * reach,
       z: tree.z + Math.sin(angle) * reach,
-      yOffset: 3.9 + layer * 0.48 + Math.sin(i * 1.7) * 0.16 };
+      yOffset: CANOPY.base + h * (CANOPY.top - CANOPY.base) + Math.sin(i * 1.7) * 0.12 };
   }));
   const foliage = new THREE.BufferGeometry(), foliagePositions = [], foliageNormals = [];
   for (let i = 0; i < 9; i++) {
@@ -64,12 +73,14 @@ export function buildDecor(items) {
   for (let i = 0; i < 5; i++) {
     const angle = i * Math.PI * 0.4;
     const branch = new THREE.CylinderGeometry(0.025, 0.065, 1.3, 6);
-    branch.rotateZ(0.5); branch.rotateY(angle);
-    part(trees, branch, wood, [Math.cos(angle) * 0.32, 4.3, Math.sin(angle) * 0.32]);
+    branch.rotateZ(0.32); branch.rotateY(angle);
+    part(trees, branch, trunk, [Math.cos(angle) * 0.2, 3.0 + (i % 2) * 0.9, Math.sin(angle) * 0.2]);
   }
   const plants = trees.flatMap(bedPlants);
-  part(plants, new THREE.SphereGeometry(0.15, 8, 6), leaf, [0, 0.22, 0], [1, 0.65, 1.15]);
-  const flowerPlants = plants.filter((p) => p.kind === 'flower').map((p) => ({ ...p, yOffset: p.plantHeight }));
+  const lowPlants = plants.filter((p) => !['spike', 'sasa'].includes(p.kind) && !p.potted);
+  part(lowPlants, new THREE.SphereGeometry(0.15, 8, 6), bedLeaf, [0, 0.22, 0], [1, 0.65, 1.15]);
+  buildZoneFeatures(trees, plants, part, { bedLeaf, wood: willow, pot });
+  const flowerPlants = plants.filter((p) => p.kind === 'flower').map((p) => ({ ...p, yOffset: p.plantHeight + (p.potted ? POT_HEIGHT : 0) }));
   part(flowerPlants, new THREE.CylinderGeometry(0.012, 0.018, 0.22, 5), leaf, [0, -0.08, 0]);
   // 花瓣與花心分離，替代原來像彩色石子的微小球。
   const petals = flowerPlants.flatMap((p) => Array.from({ length: 5 }, (_, i) => {
@@ -111,7 +122,8 @@ export function buildDecor(items) {
   group.add(pools);
   return { group, counts: { trees: trees.length, lamps: lamps.length }, setNight(night) {
     glow.emissiveIntensity = 0.15 + night * 2.5;
-    leaf.emissiveIntensity = night * 0.05; // 微弱環境補色，不把植物做成發光物。
+    leaf.emissiveIntensity = night * 0.05;
+    bedLeaf.emissiveIntensity = night * 0.05; // 微弱環境補色，不把植物做成發光物。
     flowers.emissiveIntensity = night * 0.08;
     poolMaterial.opacity = night;
     pools.visible = night > 0.01;

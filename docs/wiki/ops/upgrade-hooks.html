@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>想加 X 改哪 — 銀座 3D 漫遊</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-active="ops-hooks" data-depth="1">
+<div class="layout">
+  <aside class="sidebar"></aside>
+  <main class="main">
+    <header class="page-head">
+      <div class="crumb">運營 · 擴充</div>
+      <h1>想加 X 改哪</h1>
+      <p class="lede">常見擴充需求與要改的位置。改完都要跑測試並截圖確認。</p>
+    </header>
+<table><thead><tr><th>想做的事</th><th>要改哪裡</th><th>注意</th></tr></thead><tbody><tr><td>新增一種店內業態</td><td><code>web/shop-types.js</code> 的 INTERIOR_TYPES 與 CATEGORY → <code>shop-paint-*.js</code> 新增 6 面畫法 → <code>shop-interiors.js</code> 的 PAINTERS 與 TINTS</td><td>三處順序一致；補 test_shop_types</td></tr><tr><td>調整某業態的陳列</td><td><code>web/shop-paint-retail.js</code> 或 <code>shop-paint-food.js</code></td><td>單位是公尺，y 由下往上；front／mid 是透明層</td></tr><tr><td>改沒有點位時的業態比例</td><td><code>web/shop-types.js</code> 的 FALLBACK</td><td>比例是目測估計，改動請在註解寫依據</td></tr><tr><td>店內深度、陳列層位置</td><td><code>web/shop-paint-kit.js</code> 的 ROOM、LAYER_DEPTHS</td><td>畫法以 5.5×3.5×3.6 m 為基準</td></tr><tr><td>店內日夜亮度</td><td><code>web/shop-interiors.js</code> 片段著色器 mix(0.58, 1.12, uNight)</td><td>—</td></tr><tr><td>改地圖範圍</td><td><code>scripts/fetch_osm.py</code> 的 BBOX → 重抓 → 重建</td><td>同步更新 ATTRIBUTION 範圍</td></tr><tr><td>新增地標</td><td><code>scripts/build_city.py</code> LANDMARKS／LANDMARK_HEIGHT；<code>web/app.js</code> LANDMARK_NOTES</td><td>加觀景點測試</td></tr><tr><td>人車數量</td><td><code>web/life.js</code> CAR_COUNT、PEOPLE_COUNT</td><td>先截圖看 FPS 變化</td></tr><tr><td>行道樹間距</td><td><code>web/decor-layout.js</code> TREE_SPACING</td><td>官方 136 株，勿宣稱逐株實測</td></tr><tr><td>花壇尺寸與花色</td><td><code>web/flowerbeds.js</code> BED、ZONES</td><td>—</td></tr><tr><td>地標實景參數</td><td><code>web/references.js</code>、<code>photo-reference.js</code></td><td>附官方來源到 docs/STREET_REFERENCES.md</td></tr><tr><td>招牌規則</td><td><code>scripts/signage.py</code> → 重建資料</td><td>網頁只讀結果</td></tr></tbody></table><div class="tip"><div class="title">原則</div>查得到來源才當「實景」；否則在程式註解與文件寫「示意」。</div>
+    <div class="footer"><span>銀座 3D 漫遊 · 接手文件</span><span>最後更新：2026-10-11</span></div>
+  </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+</body>
+</html>

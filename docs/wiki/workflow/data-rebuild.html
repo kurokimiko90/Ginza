@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>① 重建地圖資料 — 銀座 3D 漫遊</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-active="workflow-data" data-depth="1">
+<div class="layout">
+  <aside class="sidebar"></aside>
+  <main class="main">
+    <header class="page-head">
+      <div class="crumb">流程 · ①</div>
+      <h1>① 重建地圖資料</h1>
+      <p class="lede">把 OpenStreetMap 的建築、道路、店家，轉成網頁能直接用的公尺座標 JSON。</p>
+    </header>
+<h2>解決什麼問題</h2><p>OSM 原始資料是經緯度、標籤雜亂、高度常缺。網頁需要的是：以銀座四丁目為原點的公尺座標、每棟樓都有高度、每個店名已決定貼在哪面牆。</p><h2>怎麼處理</h2><div class="cards"><div class="card"><div class="label">原點</div><div class="value">銀座四丁目</div><div class="desc">35.6712, 139.7655；x 往東、z 往南</div></div><div class="card"><div class="label">高度來源</div><div class="value">4 層優先序</div><div class="desc">OSM height → 樓層 × 3.4 m → 知名建築補正 → 面積估算</div></div><div class="card"><div class="label">招牌</div><div class="value">25 m 內最近外牆</div><div class="desc">每面牆最多 3 塊；保留 OSM 分類給店內業態</div></div><div class="card"><div class="label">執行時間</div><div class="value">數秒</div><div class="desc">② 只讀本機檔案（實測未計時，屬推論）</div></div></div><h3>操作步驟</h3><pre><code>python3 scripts/fetch_osm.py                  # ① 取得：Overpass → work/ginza_osm.json、work/ginza_poi.json
+python3 scripts/fetch_osm.py --skip-existing  # 只補缺少的檔案
+python3 scripts/build_city.py                 # ② 轉換 → web/assets/city.json、roads.json
+python3 tests/test_build_city.py              # 確認裁剪與欄位保留</code></pre><p><b>什麼時候用</b>：想要最新 OSM 資料、改了地圖範圍、或改了招牌／地標規則之後。<b>為什麼重要</b>：網頁只讀 JSON，不重建就看不到規則改動。</p><h2>考慮了哪些情況</h2><table><thead><tr><th>情境</th><th>怎麼應對</th></tr></thead><tbody><tr><td>建築中心在範圍外</td><td>整棟裁掉；道路則只裁掉範圍外線段</td></tr><tr><td>名稱含「ビル」等字</td><td>不做頂部招牌，避免整排「〇〇ビル」</td></tr><tr><td>同一建築 2 家以上店且高 ≥ 12 m</td><td>加多租戶袖看板</td></tr><tr><td>重跑結果是否穩定</td><td>同一份原始資料重跑，輸出完全相同（2026-10-11 實測比對）</td></tr></tbody></table><div class="warn-box"><div class="title">授權</div>city.json、roads.json 是 OSM 衍生資料庫，依 ODbL 1.0；公開時須保留「© OpenStreetMap contributors」，詳見 <code>docs/ATTRIBUTION.md</code>。</div>
+    <div class="footer"><span>銀座 3D 漫遊 · 接手文件</span><span>最後更新：2026-10-11</span></div>
+  </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+</body>
+</html>

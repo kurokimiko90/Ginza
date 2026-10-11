@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>啟動與測試 — 銀座 3D 漫遊</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-active="ops-run" data-depth="1">
+<div class="layout">
+  <aside class="sidebar"></aside>
+  <main class="main">
+    <header class="page-head">
+      <div class="crumb">運營 · 啟動</div>
+      <h1>啟動與測試</h1>
+      <p class="lede">在本機跑起來、確認沒壞。</p>
+    </header>
+<h2>啟動</h2><pre><code>node web/server.cjs              # http://127.0.0.1:8770/
+PORT=8780 node web/server.cjs    # 換埠</code></pre><p><b>什麼時候用</b>：每次開發。<b>為什麼</b>：瀏覽器不允許 file:// 載入模組與 JSON。需要 Node（驗證環境 v25）與支援 WebGL 2 的瀏覽器。</p><h2>常用網址</h2><table><thead><tr><th>網址</th><th>用途</th></tr></thead><tbody><tr><td><code>/#@-41,0,0,28</code></td><td>從交差點仰望和光</td></tr><tr><td><code>/?hour=13#@-92,60,170,-3</code></td><td>白天斜看中央通り店面</td></tr><tr><td><code>/?hour=20#@-533,618,215,-4</code></td><td>夜間喫茶店內</td></tr></tbody></table><h2>測試</h2><pre><code>for t in tests/*.mjs; do node &quot;$t&quot; || echo &quot;FAIL $t&quot;; done
+python3 tests/test_build_city.py</code></pre><table><thead><tr><th>測試</th><th>檢查什麼</th></tr></thead><tbody><tr><td>test_collision</td><td>碰撞、沿牆滑動、地標觀景點可站立且不被遮擋</td></tr><tr><td>test_shop_layout</td><td>店面分節連續、可重現、相鄰圖樣不同</td></tr><tr><td>test_shop_types</td><td>分類 → 業態、抽樣可重現、就近招牌、同業態合併</td></tr><tr><td>test_decor / road_layout / road_markings / infrastructure</td><td>街具位置、道路淨空、車道校正</td></tr><tr><td>test_surface_lighting / night_style</td><td>夜間光照與燈箱光色</td></tr><tr><td>test_references / movement</td><td>官方高度、移動</td></tr><tr><td>test_build_city.py</td><td>資料轉換、裁剪與欄位保留</td></tr></tbody></table><div class="warn-box"><div class="title">沒有自動化的部分</div>畫面外觀沒有自動視覺回歸測試；改動繪製後請依 <a href="screenshots.html">截圖規範</a> 手動截圖比對。</div>
+    <div class="footer"><span>銀座 3D 漫遊 · 接手文件</span><span>最後更新：2026-10-11</span></div>
+  </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+</body>
+</html>

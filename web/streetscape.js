@@ -2,6 +2,8 @@
 import * as THREE from 'three';
 import { pointInRing, createCollider } from './collision.js';
 import { shopBays } from './shop-layout.js';
+import { interiorTypeFor, nearestShopCategory, shopRooms } from './shop-types.js';
+import { createInteriorMaterial, createInteriorBuffer } from './shop-interiors.js';
 import { createLightboxes } from './lightboxes.js';
 import { lightboxTint } from './night-style.js';
 
@@ -29,88 +31,33 @@ function hash(text) {
 
 const isCJK = (text) => /[぀-ヿ一-鿿]/.test(text);
 
-function storefrontTextures() {
-  // Match a ~5.5m wide / 3.5m tall bay; the old 8:1 canvas stretched objects into sticks.
+// 店面框架：門框、竪框、簷板不透明；玻璃部分 alpha=0，交給 interior mapping 顯示店內。
+function storefrontTexture() {
   const w = 256, rowH = 128, h = rowH * VARIANTS;
-  const day = document.createElement('canvas');
-  const night = document.createElement('canvas');
-  day.width = night.width = w;
-  day.height = night.height = h;
-  const d = day.getContext('2d'), n = night.getContext('2d');
-  n.fillStyle = '#000'; n.fillRect(0, 0, w, h);
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const d = canvas.getContext('2d');
   const frames = ['#3b454a', '#99876b', '#dad6ce', '#6b625b', '#667576', '#43505c', '#9a8469', '#c0c2bb'];
-  const glows = ['#ffe2b0', '#fff4e0', '#ffd9a0', '#e8f0ff', '#ffe9c8', '#fff0d0', '#ffd0a8', '#f4f8ff'];
   for (let v = 0; v < VARIANTS; v++) {
     const y0 = v * rowH;
     d.fillStyle = frames[v]; d.fillRect(0, y0, w, rowH);
-    const panes = 3 + (v % 3);
-    const paneW = w / panes;
-    for (let i = 0; i < panes; i++) {
-      const x = i * paneW + 8, y = y0 + 24, pw = paneW - 16, ph = rowH - 30;
-      const glass = d.createLinearGradient(0, y, 0, y + ph);
-      glass.addColorStop(0, '#485d62'); glass.addColorStop(0.45, '#92877a'); glass.addColorStop(1, '#c3b59e');
-      d.fillStyle = glass; d.fillRect(x, y, pw, ph);
-      // Perspective floor and side reveals make the display read as a shallow room.
-      d.fillStyle = '#d5c6ab';
-      d.beginPath(); d.moveTo(x + 12, y + ph * 0.76); d.lineTo(x + pw - 12, y + ph * 0.76);
-      d.lineTo(x + pw, y + ph); d.lineTo(x, y + ph); d.fill();
-      d.fillStyle = 'rgba(24,32,34,0.35)'; d.fillRect(x, y, 9, ph); d.fillRect(x + pw - 9, y, 9, ph);
-      d.fillStyle = '#ead0a3'; d.fillRect(x + 10, y + ph * 0.72, pw - 20, 3);
-      // 程序化商品輪廓：花盆、糕點、服裝與展示台。
-      // 櫥窗內的商品陳列
-      const productCount = pw < 60 ? 1 : 2;
-      for (let k = 0; k < productCount; k++) {
-        const r = hash(`${v}-${i}-${k}`);
-        d.fillStyle = `hsl(${Math.round(r * 360)}, 35%, ${45 + r * 25}%)`;
-        const gx = 0, gy = y + ph * 0.56;
-        d.save(); d.translate(x + pw * (k + 1) / (productCount + 1) - 12, 0);
-        d.scale(Math.min(1, (pw / productCount - 8) / 28), 1);
-        if (v % 3 === 0) {
-          d.fillStyle = '#72975d';
-          d.beginPath(); d.ellipse(gx + 9, gy - 12, 12, 17, -0.3, 0, Math.PI * 2); d.fill();
-          d.fillStyle = '#cf946c'; d.fillRect(gx, gy, 18, 18);
-        } else if (v % 3 === 1) {
-          d.beginPath(); d.arc(gx + 10, gy + 10, 10, Math.PI, 0); d.fill();
-          d.fillStyle = '#f5e4c4'; d.fillRect(gx - 3, gy + 11, 26, 4);
-        } else {
-          // Apparel display: shoulders, sleeves and torso instead of colored sticks.
-          d.beginPath(); d.moveTo(gx + 7, gy - 17); d.lineTo(gx + 16, gy - 17);
-          d.lineTo(gx + 25, gy - 9); d.lineTo(gx + 21, gy - 3);
-          d.lineTo(gx + 18, gy - 6); d.lineTo(gx + 18, gy + 17);
-          d.lineTo(gx + 5, gy + 17); d.lineTo(gx + 5, gy - 6);
-          d.lineTo(gx + 1, gy - 3); d.lineTo(gx - 3, gy - 9); d.closePath(); d.fill();
-          d.fillStyle = '#b3aaa0'; d.fillRect(gx + 10, gy + 17, 3, 9);
-        }
-        d.restore();
-      }
-      d.fillStyle = 'rgba(255,255,255,0.09)';
-      d.beginPath(); d.moveTo(x + pw * 0.6, y); d.lineTo(x + pw * 0.8, y);
-      d.lineTo(x + pw * 0.35, y + ph); d.lineTo(x + pw * 0.15, y + ph); d.fill();
-      n.fillStyle = glows[v]; n.globalAlpha = 0.85; n.fillRect(x, y, pw, ph); n.globalAlpha = 1;
-    }
-    // 每個分節各有一個入口，玻璃門／門框／把手，不再整面連續重複櫥窗。
+    const panes = 2 + (v % 3);
     const doorX = v % 2 ? 190 : 13, doorW = 36;
+    // 玻璃區避開入口，讓門框與竪框保持原有節奏。
+    const glassX0 = v % 2 ? 6 : doorX + doorW + 12, glassX1 = v % 2 ? doorX - 12 : w - 6;
+    const paneW = (glassX1 - glassX0) / panes;
+    for (let i = 0; i < panes; i++) d.clearRect(glassX0 + i * paneW + 3, y0 + 22, paneW - 6, rowH - 28);
     d.fillStyle = '#333f45'; d.fillRect(doorX - 9, y0 + 22, doorW + 18, 106);
-    const doorGlass = d.createLinearGradient(doorX, y0, doorX + doorW, y0 + rowH);
-    doorGlass.addColorStop(0, '#8aabae'); doorGlass.addColorStop(1, '#344951');
-    d.fillStyle = doorGlass; d.fillRect(doorX, y0 + 27, doorW, 97);
+    d.clearRect(doorX, y0 + 27, doorW, 97);
     d.fillStyle = '#d2c7b4'; d.fillRect(doorX + doorW - 7, y0 + 67, 2, 26);
-    d.fillStyle = 'rgba(233,242,241,0.15)'; d.fillRect(doorX + 3, y0 + 29, 5, 91);
-    n.fillStyle = '#d2d4cc'; n.fillRect(doorX, y0 + 27, doorW, 97);
     d.fillStyle = '#8e8a80'; d.fillRect(0, y0 + 124, w, 4);
-    d.fillStyle = 'rgba(0,0,0,0.25)'; d.fillRect(0, y0, w, 20); // 上方簷板
+    d.fillStyle = '#2e2b28'; d.fillRect(0, y0, w, 20); // 上方簷板
   }
-  // 夜間保留商品與窗框細節，避免整塊櫥窗成為無細節的白色燈箱。
-  n.globalCompositeOperation = 'multiply';
-  n.drawImage(day, 0, 0);
-  n.globalCompositeOperation = 'source-over';
-  return [day, night].map((canvas) => {
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.wrapS = THREE.RepeatWrapping;
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = 8;
-    return tex;
-  });
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  return tex;
 }
 
 export function pushQuad(buf, corners, normal, uvs, color) {
@@ -162,7 +109,9 @@ function streetLookup(roads) {
 }
 
 // 只在面向街道、外側沒有相鄰建築的外牆配置店面。
-function buildShopfronts(buildings, roads) {
+function buildShopfronts(buildings, roads, signs) {
+  const interiors = createInteriorBuffer();
+  const shopSigns = signs.filter((s) => s.kind !== 'crown' && s.cat);
   const fronts = newBuffer(), awnings = newBuffer(), frames = newBuffer();
   const lightSources = [];
   const awningColor = new THREE.Color();
@@ -186,17 +135,27 @@ function buildShopfronts(buildings, roads) {
         const normal = new THREE.Vector3(nx, 0, nz);
         const r = hash(`${b.id}-${k}`);
         const at = (distance) => [p[0] + (q[0] - p[0]) * distance / length, p[1] + (q[1] - p[1]) * distance / length];
-        for (const bay of shopBays(length, `${b.id}-${k}`)) {
+        const bays = shopBays(length, `${b.id}-${k}`);
+        // 沒有店家點位的分節沿用整面牆的抽樣業態，避免同一店面被切成不同業態的小隔間。
+        const wallType = interiorTypeFor(null, `${b.id}-${k}`);
+        const rooms = shopRooms(bays, bays.map((bay) => {
+          const [cx, cz] = at((bay.start + bay.end) / 2);
+          const category = nearestShopCategory(shopSigns, cx, cz, nx, nz);
+          return category ? interiorTypeFor(category, '') : wallType;
+        }));
+        const mirror = hash(`m${b.id}-${k}`) > 0.5;
+        bays.forEach((bay, index) => {
           const a = at(bay.start), c = at(bay.end);
           lightSources.push({ x: (a[0] + c[0]) / 2 + nx * 1.1, z: (a[1] + c[1]) / 2 + nz * 1.1 });
           const v0 = (bay.variant + 0.03) / VARIANTS, v1 = (bay.variant + 0.97) / VARIANTS;
-          pushQuad(fronts, [off(a, SHOP_BOTTOM), off(c, SHOP_BOTTOM), off(c, SHOP_TOP), off(a, SHOP_TOP)], normal,
+          pushQuad(fronts, [off(a, SHOP_BOTTOM, 0.015), off(c, SHOP_BOTTOM, 0.015), off(c, SHOP_TOP, 0.015), off(a, SHOP_TOP, 0.015)], normal,
             [[0, 1 - v1], [1, 1 - v1], [1, 1 - v0], [0, 1 - v0]]);
+          interiors.add([off(a, SHOP_BOTTOM), off(c, SHOP_BOTTOM), off(c, SHOP_TOP), off(a, SHOP_TOP)], normal, rooms[index], mirror);
           // 窄石材分隔條向外偏移，與玻璃分開接收光照。
           const a1 = at(Math.min(bay.end, bay.start + 0.12));
           pushQuad(frames, [off(a, SHOP_BOTTOM, 0.04), off(a1, SHOP_BOTTOM, 0.04), off(a1, SHOP_TOP, 0.04), off(a, SHOP_TOP, 0.04)], normal,
             [[0, 0], [1, 0], [1, 1], [0, 1]]);
-        }
+        });
         if (b.awningVerified === true && r > 0.68 && length < 24) {
           awningColor.set(['#b95753', '#3f8790', '#d3a258', '#6d956d'][Math.floor(hash(`a${b.id}${k}`) * 4)]);
           const slope = new THREE.Vector3(nx * 0.5, 0.85, nz * 0.5).normalize();
@@ -206,13 +165,11 @@ function buildShopfronts(buildings, roads) {
       }
     }
   }
-  const [dayMap, nightMap] = storefrontTextures();
-  const frontMaterial = new THREE.MeshStandardMaterial({
-    map: dayMap, emissive: '#ffffff', emissiveMap: nightMap, emissiveIntensity: 0.35, roughness: 0.35, metalness: 0.1,
-  });
+  const frontMaterial = new THREE.MeshStandardMaterial({ map: storefrontTexture(), alphaTest: 0.5, roughness: 0.55, metalness: 0.15 });
+  const interiorMaterial = createInteriorMaterial();
   const awningMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, side: THREE.DoubleSide });
   const frameMaterial = new THREE.MeshStandardMaterial({ color: '#b8b2a7', roughness: 0.75 });
-  return { meshes: [meshFrom(fronts, frontMaterial), meshFrom(frames, frameMaterial), meshFrom(awnings, awningMaterial, true)], frontMaterial, lightSources };
+  return { meshes: [interiors.finish(interiorMaterial), meshFrom(fronts, frontMaterial), meshFrom(frames, frameMaterial), meshFrom(awnings, awningMaterial, true)], interiorMaterial, bayCount: interiors.count, lightSources };
 }
 
 function fitFont(ctx, text, family, maxWidth, maxSize) {
@@ -311,16 +268,17 @@ function buildSigns(signs) {
 }
 
 export function buildStreetscape(buildings, signs, roads) {
-  const shop = buildShopfronts(buildings, roads);
+  const shop = buildShopfronts(buildings, roads, signs);
   const sign = buildSigns(signs);
   const group = new THREE.Group();
   group.add(...shop.meshes, sign.mesh, sign.boxes.group);
   return {
     group,
     signCount: sign.count,
+    shopBayCount: shop.bayCount,
     lightSources: shop.lightSources,
     setNight(night) {
-      shop.frontMaterial.emissiveIntensity = 0.12 + night * 0.85;
+      shop.interiorMaterial.uniforms.uNight.value = night;
       sign.material.emissiveIntensity = 0.08 + night * 1.7;
       sign.boxes.setNight(night);
     },

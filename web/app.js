@@ -48,6 +48,9 @@ async function loadJSON(url) {
 }
 
 function jstHour() {
+  // ?hour=14.5 固定開場時間，方便分享與截圖比對。
+  const fixed = Number(new URLSearchParams(location.search).get('hour'));
+  if (location.search.includes('hour=') && Number.isFinite(fixed)) return THREE.MathUtils.clamp(fixed, 5, 22);
   const now = new Date();
   const hour = ((now.getUTCHours() + 9) % 24) + now.getUTCMinutes() / 60;
   return THREE.MathUtils.clamp(Math.round(hour * 4) / 4, 5, 22);

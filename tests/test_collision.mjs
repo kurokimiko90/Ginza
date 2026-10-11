@@ -46,4 +46,12 @@ for (const landmark of city.landmarks) {
 }
 assert.equal(real.blocked(0, 0), false, '銀座四丁目交差點中心為道路');
 
+// 長條花壇按朝向判定：沿街長 2.2m 擋住，橫向 0.55m 外可通行。
+const bed = { x: 0, z: 0, radius: 1.25, heading: Math.PI / 4, halfWidth: 0.55, halfLength: 1.1 };
+const bedCollider = createCollider([], [-10, -10, 10, 10], [bed]);
+const along = [Math.sin(bed.heading), Math.cos(bed.heading)], across = [Math.cos(bed.heading), -Math.sin(bed.heading)];
+assert.equal(bedCollider.blocked(along[0] * 1.0, along[1] * 1.0), true, '花壇長邊方向被擋');
+assert.equal(bedCollider.blocked(across[0] * 0.7, across[1] * 0.7), false, '花壇側邊外可通行');
+assert.equal(createCollider([], [-10, -10, 10, 10], [{ x: 0, z: 0, radius: 0.5 }]).blocked(0.4, 0.4), true, '無朝向小物仍為方形半徑');
+
 console.log(`ok：合成測試與 ${city.landmarks.length} 個地標通過`);

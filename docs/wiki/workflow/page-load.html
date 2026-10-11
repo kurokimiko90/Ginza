@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>② 網頁載入與組場景 — 銀座 3D 漫遊</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-active="workflow-load" data-depth="1">
+<div class="layout">
+  <aside class="sidebar"></aside>
+  <main class="main">
+    <header class="page-head">
+      <div class="crumb">流程 · ②</div>
+      <h1>② 網頁載入與組場景</h1>
+      <p class="lede">打開網頁後，瀏覽器在數秒內把兩份 JSON 變成可走動的街區。</p>
+    </header>
+<div class="legend">
+  <span class="item"><span class="swatch" style="background:var(--human)"></span>人工（維護者／使用者操作）</span>
+  <span class="item"><span class="swatch" style="background:var(--auto)"></span>自動腳本</span>
+  <span class="item"><span class="swatch" style="background:var(--llm)"></span>LLM（本專案未使用）</span>
+  <span class="item"><span class="swatch" style="background:var(--store);border:1px solid var(--line)"></span>檔案 / 儲存</span>
+  <span class="item"><span class="swatch" style="background:var(--extern)"></span>外部 API</span>
+</div><div class="flow"><svg viewBox="0 0 1080 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="網頁載入流程"><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L0,10 L10,5 z" fill="#5A5248"/></marker></defs>
+<style>.lab{font:600 15px "Noto Sans JP",sans-serif}.sub{font:400 12.5px "Noto Sans JP",sans-serif;opacity:.85}.cap{font:700 13px "Noto Sans JP",sans-serif;fill:#5A5248;letter-spacing:.1em}
+.nh{fill:#A89889}.na{fill:#F5C842}.ns{fill:#E8D5B7;stroke:#C9B89A}.ne{fill:#5A5248}.arrow{stroke:#5A5248;stroke-width:1.6;fill:none}</style>
+<rect class="nh" x="10" y="70" width="120" height="50" rx="6"/><text x="70.0" y="92" class="lab" fill="white" text-anchor="middle">開啟網址</text><text x="70.0" y="110" class="sub" fill="white" text-anchor="middle">可帶 #@視角 ?hour=</text>
+<rect class="ns" x="160" y="70" width="130" height="50" rx="6"/><text x="225.0" y="92" class="lab" fill="#5A5248" text-anchor="middle">讀兩份 JSON</text><text x="225.0" y="110" class="sub" fill="#5A5248" text-anchor="middle">city / roads</text>
+<rect class="na" x="320" y="70" width="130" height="50" rx="6"/><text x="385.0" y="92" class="lab" fill="#5A5248" text-anchor="middle">校正</text><text x="385.0" y="110" class="sub" fill="#5A5248" text-anchor="middle">中央通り車道、地標高度</text>
+<rect class="na" x="480" y="70" width="140" height="50" rx="6"/><text x="550.0" y="92" class="lab" fill="#5A5248" text-anchor="middle">生成場景</text><text x="550.0" y="110" class="sub" fill="#5A5248" text-anchor="middle">建築→店面→人車→街具</text>
+<rect class="na" x="650" y="70" width="130" height="50" rx="6"/><text x="715.0" y="92" class="lab" fill="#5A5248" text-anchor="middle">夜間照明圖</text><text x="715.0" y="110" class="sub" fill="#5A5248" text-anchor="middle">路燈、橱窗、招牌</text>
+<rect class="na" x="810" y="70" width="120" height="50" rx="6"/><text x="870.0" y="92" class="lab" fill="#5A5248" text-anchor="middle">設定時間</text><text x="870.0" y="110" class="sub" fill="#5A5248" text-anchor="middle">太陽、窗光</text>
+<rect class="nh" x="960" y="70" width="110" height="50" rx="6"/><text x="1015.0" y="92" class="lab" fill="white" text-anchor="middle">開始操作</text><text x="1015.0" y="110" class="sub" fill="white" text-anchor="middle">鳥瞰或漫遊</text>
+<path class="arrow" d="M130 93 L158 93" marker-end="url(#arrow)"/><path class="arrow" d="M290 93 L318 93" marker-end="url(#arrow)"/><path class="arrow" d="M450 93 L478 93" marker-end="url(#arrow)"/><path class="arrow" d="M620 93 L648 93" marker-end="url(#arrow)"/><path class="arrow" d="M780 93 L808 93" marker-end="url(#arrow)"/><path class="arrow" d="M930 93 L958 93" marker-end="url(#arrow)"/>
+</svg><div class="caption">全部在瀏覽器內完成；任何一步失敗，畫面停在「載入失敗：原因」。</div></div><h2>解決什麼問題</h2><p>上千棟建築、上萬個店面零件、兩千多個行人，若一個一個畫會很慢。這一步把同類物件合併成少數幾批繪製，並在開始前完成地標校正。</p><h2>怎麼處理</h2><table><thead><tr><th>順序</th><th>做什麼</th><th>白話說明</th></tr></thead><tbody><tr><td>1</td><td>讀資料</td><td>同時下載 city.json 與 roads.json</td></tr><tr><td>2</td><td>校正</td><td>依平行步道修正中央通り車道寬度；和光、GINZA SIX 套用官方高度（不改原始資料）</td></tr><tr><td>3</td><td>建築</td><td>外形擠出成樓，貼上程序化窗格；地標用專屬立面</td></tr><tr><td>4</td><td>街景</td><td>店面櫥窗與店內、招牌燈箱、花壇行道樹、路燈信號</td></tr><tr><td>5</td><td>人車</td><td>依道路網生成，靠左行駛、沿人行道行走</td></tr><tr><td>6</td><td>夜間照明圖</td><td>把路燈、招牌、櫥窗位置畫成一張光照圖，讓低處地面與牆面入夜變亮</td></tr><tr><td>7</td><td>時間與視角</td><td>依現在東京時間（或 ?hour=）設定光線；若網址帶 #@ 視角就直接進入漫遊</td></tr></tbody></table><h2>考慮了哪些情況</h2><table><thead><tr><th>情境</th><th>怎麼應對</th></tr></thead><tbody><tr><td>用 file:// 直接開 index.html</td><td>瀏覽器會擋 ES module 與 fetch；必須用本機伺服器</td></tr><tr><td>JSON 載入失敗</td><td>畫面顯示「載入失敗：原因」，主控台記錄錯誤</td></tr><tr><td>夜晚時間開啟</td><td>時間限制在 05:00–22:00 之間</td></tr></tbody></table><div class="tip"><div class="title">為什麼這樣設計</div>同材質物件合併為一批、人車用實例化繪製：數量級是「幾十次繪製」而不是「上萬次」，一般筆電也能流暢走動。</div>
+    <div class="footer"><span>銀座 3D 漫遊 · 接手文件</span><span>最後更新：2026-10-11</span></div>
+  </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+</body>
+</html>

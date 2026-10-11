@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>資料格式 — 銀座 3D 漫遊</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-active="tech-schema" data-depth="1">
+<div class="layout">
+  <aside class="sidebar"></aside>
+  <main class="main">
+    <header class="page-head">
+      <div class="crumb">技術 · 資料</div>
+      <h1>資料格式</h1>
+      <p class="lede">網頁讀的兩份 JSON。座標單位為公尺，原點為銀座四丁目，x 往東、z 往南。</p>
+    </header>
+<h2>解決什麼問題</h2><p>網頁的所有內容都從這兩份檔案長出來。改規則前先確認欄位語意，避免前後端（腳本與網頁）理解不一致。</p><pre><code>city.json   { origin:[lat,lon], bounds:[minX,minZ,maxX,maxZ],
+              landmarks:[{label, id, target:[x,z], height}],
+              signs:[{text, kind, cat?, x, z, nx, nz, room, top, slot, prio}],
+              boards:[{names[], x, z, nx, nz, top}],
+              streetSigns:[{name, en, x, z, dx, dz}], streets:[{name, en, x, z}],
+              clock:{x, z, base, face:[x,z]},
+              buildings:[{id, height, base, method, tone, outers:[[[x,z],…]], holes?, name?}] }
+roads.json  [{kind, width, points:[[x,z],…], name?, en?}]</code></pre><table><thead><tr><th>欄位</th><th>意思</th><th>注意</th></tr></thead><tbody><tr><td>signs.kind</td><td>crown（大樓頂部）／shop／restaurant／cafe…</td><td>既有語意：所有 shop 標籤都歸成 "shop"</td></tr><tr><td>signs.cat</td><td>OSM shop 或 amenity 的原值，例如 jewelry、convenience</td><td>2026-10-11 新增；只有店家招牌有，頂部招牌沒有</td></tr><tr><td>signs.nx, nz</td><td>招牌所在外牆朝外的方向</td><td>店內業態比對時要求方向一致</td></tr><tr><td>buildings.method</td><td>高度來源</td><td>估算值不要當實測</td></tr><tr><td>buildings.base</td><td>架空建築的底部高度</td><td>base ≥ 2 的不做店面</td></tr></tbody></table><div class="warn-box"><div class="title">授權</div>兩份檔案屬 OSM 衍生資料（ODbL 1.0）。</div>
+    <div class="footer"><span>銀座 3D 漫遊 · 接手文件</span><span>最後更新：2026-10-11</span></div>
+  </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+</body>
+</html>

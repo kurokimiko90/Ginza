@@ -5,8 +5,9 @@ export function buildInfrastructure(items) {
   const group = new THREE.Group();
   const lamps = items.filter((p) => p.type === 'lamp');
   const signals = items.filter((p) => p.type === 'signal');
-  const metal = new THREE.MeshStandardMaterial({ color: '#525e63', metalness: 0.5, roughness: 0.48 });
-  const housing = new THREE.MeshStandardMaterial({ color: '#30393e', roughness: 0.65 });
+  // 2015／2021 銀座通り實照：燈柱與信號柱為淺灰綠塗裝，信號燈箱為淺灰。
+  const metal = new THREE.MeshStandardMaterial({ color: '#8e9a93', metalness: 0.25, roughness: 0.55 });
+  const housing = new THREE.MeshStandardMaterial({ color: '#a4aba9', roughness: 0.6 });
   const glass = new THREE.MeshStandardMaterial({ color: '#e4eced', emissive: '#dceaff', emissiveIntensity: 0, roughness: 0.4 });
   const lampLight = new THREE.MeshStandardMaterial({ color: '#f4f3e8', emissive: '#fff3dc', emissiveIntensity: 0.1 });
   const red = new THREE.MeshStandardMaterial({ color: '#b52624', emissive: '#ff3022', emissiveIntensity: 0.8 });

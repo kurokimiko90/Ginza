@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>這是什麼 / 給誰 — 銀座 3D 漫遊</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-active="product-overview" data-depth="1">
+<div class="layout">
+  <aside class="sidebar"></aside>
+  <main class="main">
+    <header class="page-head">
+      <div class="crumb">產品 · 這是什麼</div>
+      <h1>這是什麼 / 給誰</h1>
+      <p class="lede">一個可以在瀏覽器裡逛的銀座。重點是「像在街上走」的感覺，而不是精確測量。</p>
+    </header>
+<h2>解決什麼問題</h2><p>地圖服務能看平面與照片，卻很難自由地「走一段銀座」：轉個彎看看並木通り、晚上看招牌亮起來、停在和光鐘樓前抬頭。本專案用公開地圖資料，在任何電腦的瀏覽器裡提供這種體驗，不需要安裝或帳號。</p><h2>怎麼處理</h2><div class="cards"><div class="card"><div class="label">看法</div><div class="value">2 種</div><div class="desc">城市鳥瞰、第一人稱街道漫遊</div></div><div class="card"><div class="label">時間</div><div class="value">05:00–22:00</div><div class="desc">依東京緯度與日期估算太陽位置</div></div><div class="card"><div class="label">地標</div><div class="value">4 處</div><div class="desc">和光、歌舞伎座、GINZA SIX、東急プラザ銀座</div></div><div class="card"><div class="label">店內業態</div><div class="value">12 種</div><div class="desc">服飾、珠寶、甜點、喫茶、餐廳、便利店等</div></div></div><h2>考慮了哪些情況</h2><table><thead><tr><th>情境</th><th>系統怎麼應對</th></tr></thead><tbody><tr><td>OSM 沒有建築高度（約九成）</td><td>依占地面積估算並加小幅隨機；每棟記錄高度來源（method）</td></tr><tr><td>不確定的實景細節（路燈位置、遮陽棚、藍色街名牌）</td><td>不放置，或只在文件中標為「示意」；寧缺勿假</td></tr><tr><td>地標需要準確</td><td>和光、GINZA SIX 依官方公開資料校正高度與立面構成</td></tr><tr><td>手機或窄螢幕</td><td>觸控方向鍵、窄版面；未做完整手機實機驗收</td></tr><tr><td>想分享某個角度</td><td>網址 <code>#@x,z,方位,仰角</code> 直接進入該位置；<code>?hour=</code> 固定時間</td></tr></tbody></table><h2>為什麼這樣設計</h2><div class="tip"><div class="title">設計取捨</div>選擇「純靜態＋瀏覽器即時生成」：部署只要丟資料夾，五年後仍能打開；代價是外觀細節全靠程序化繪製，與實景有差距。專案文件刻意區分「實景參考」與「示意」，避免使用者把示意當成事實。</div><div class="warn-box"><div class="title">業主確認區</div>下列內容未從程式碼得到，需專案擁有者補充：<ul><li>對外公開的網址與部署方式（目前只確認可放 GitHub Pages）</li><li>是否有使用者數、造訪量等目標</li><li>此專案的定位：個人作品集／教學示範／其他（訪談答覆：個人作品，主要給接手開發者）</li></ul></div>
+    <div class="footer"><span>銀座 3D 漫遊 · 接手文件</span><span>最後更新：2026-10-11</span></div>
+  </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+</body>
+</html>
