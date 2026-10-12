@@ -1,6 +1,7 @@
 // 街上的車與行人：沿 OSM 道路圖行進，路口隨機轉向。車輛靠左行駛（日本）。
 import * as THREE from 'three';
 import { createPeopleMesh } from './people.js';
+import { carStep, leaderGaps, stopsOnPath, walkState } from './traffic-signals.js';
 
 const CAR_ROADS = new Set([
   'trunk', 'primary', 'secondary', 'tertiary', 'unclassified', 'residential', 'living_street',
@@ -69,20 +70,21 @@ function sample(seg, s, dir, out) {
   return out;
 }
 
-function advance(agent, network, rand, distance) {
+// canEnter(index)：false 時停在路段終點等候，並保留已選的下一段，不重新抽選
+function advance(agent, network, rand, distance, canEnter = () => true) {
   agent.s += distance;
   let seg = network.segments[agent.seg];
   while (agent.s > seg.length) {
-    agent.s -= seg.length;
     const endKey = keyOf(agent.dir > 0 ? seg.points.at(-1) : seg.points[0]);
-    const options = network.nodes.get(endKey).filter((o) => o.index !== agent.seg);
-    if (options.length) {
-      const next = options[Math.floor(rand() * options.length)];
-      agent.seg = next.index;
-      agent.dir = next.end === 0 ? 1 : -1;
-    } else {
-      agent.dir = -agent.dir; // 死巷迴轉
+    if (!agent.next) {
+      const options = network.nodes.get(endKey).filter((o) => o.index !== agent.seg);
+      agent.next = options.length ? options[Math.floor(rand() * options.length)] : { index: agent.seg, end: agent.dir > 0 ? 1 : 0 }; // 死巷迴轉
     }
+    if (!canEnter(agent.next.index)) { agent.s = seg.length; return; }
+    agent.s -= seg.length;
+    agent.seg = agent.next.index;
+    agent.dir = agent.next.end === 0 ? 1 : -1;
+    agent.next = null;
     seg = network.segments[agent.seg];
   }
 }
@@ -166,9 +168,13 @@ function spawn(network, count, rand, make) {
   });
 }
 
-function createCars(roads, rand) {
+function createCars(roads, rand, crossings) {
   const network = buildNetwork(roads, CAR_ROADS);
-  const cars = spawn(network, CAR_COUNT, rand, () => ({ speed: 7 + rand() * 5, lane: 0.25 + rand() * 0.08 }));
+  network.segments.forEach((seg) => { seg.stops = stopsOnPath(seg.points, seg.cum, crossings); });
+  const cars = spawn(network, CAR_COUNT, rand, () => {
+    const speed = 7 + rand() * 5;
+    return { speed, v: speed, lane: 0.25 + rand() * 0.08 };
+  });
   // 車身沿 -z 為車頭方向（與相機 yaw 慣例一致）
   const geo = carGeometries();
   const bodyMesh = instanced(geo.body, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.3, metalness: 0.45 }), cars.length);
@@ -181,8 +187,11 @@ function createCars(roads, rand) {
   return { network, agents: cars, meshes: [bodyMesh, trimMesh, glassMesh, lightMesh], lightMaterial };
 }
 
-function createPeople(roads, rand) {
+function createPeople(roads, rand, crossings) {
   const network = buildNetwork(roads, WALK_ROADS);
+  // 有信號的過街線：以 points 參照對應（buildNetwork 的展開保留原陣列）
+  const byPoints = new Map(crossings.map((c) => [c.points, c.vehicleAxis]));
+  network.segments.forEach((seg) => { seg.signalAxis = byPoints.get(seg.points) || null; });
   const people = spawn(network, PEOPLE_COUNT, rand, () => ({
     speed: 1 + rand() * 0.6, lane: (rand() - 0.5) * 0.6, phase: rand() * Math.PI * 2, scale: 0.92 + rand() * 0.14,
   }));
@@ -190,10 +199,11 @@ function createPeople(roads, rand) {
   return { network, agents: people, meshes: [walkers.mesh], setTime: walkers.setTime };
 }
 
-export function createLife(roads) {
+/** signalPlan：traffic-signals.planSignals 的結果；省略時人車不受信號控制。 */
+export function createLife(roads, signalPlan = { crossings: [] }) {
   const rand = mulberry(20261009);
-  const cars = createCars(roads, rand);
-  const people = createPeople(roads, rand);
+  const cars = createCars(roads, rand, signalPlan.crossings);
+  const people = createPeople(roads, rand, signalPlan.crossings);
   const group = new THREE.Group();
   group.add(...cars.meshes, ...people.meshes);
   const dummy = new THREE.Object3D();
@@ -229,8 +239,19 @@ export function createLife(roads) {
       dummy.scale.setScalar(agent.scale);
       dummy.updateMatrix();
     });
-    for (const agent of cars.agents) advance(agent, cars.network, rand, agent.speed * dt);
-    for (const agent of people.agents) advance(agent, people.network, rand, agent.speed * dt);
+    const gaps = leaderGaps(cars.agents);
+    for (const agent of cars.agents) {
+      const seg = cars.network.segments[agent.seg];
+      const { v, distance } = carStep(agent, seg, gaps.get(agent), clock, dt);
+      agent.v = v;
+      advance(agent, cars.network, rand, distance);
+    }
+    // 行人只在路段交界判斷：紅燈或閃爍時不進入過街線，已在線上者走完
+    const canWalk = (index) => {
+      const axis = people.network.segments[index].signalAxis;
+      return !axis || walkState(axis, clock) === 'walk';
+    };
+    for (const agent of people.agents) advance(agent, people.network, rand, agent.speed * dt, canWalk);
   }
 
   update(0);
@@ -238,6 +259,7 @@ export function createLife(roads) {
     group,
     counts: { cars: cars.agents.length, people: people.agents.length },
     update,
+    get time() { return clock; },
     setNight(night) {
       cars.lightMaterial.color.setScalar(0.7 + night * 1.6); // 夜間車燈更亮
     },

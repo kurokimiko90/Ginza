@@ -6,6 +6,7 @@ import { interiorTypeFor, nearestShopCategory, shopRooms } from './shop-types.js
 import { createInteriorMaterial, createInteriorBuffer } from './shop-interiors.js';
 import { createLightboxes } from './lightboxes.js';
 import { lightboxTint } from './night-style.js';
+import { MODELED_BUILDINGS } from './photo-reference.js';
 
 const SHOP_BOTTOM = 0.1;
 const SHOP_TOP = 3.6;
@@ -118,7 +119,7 @@ function buildShopfronts(buildings, roads, signs) {
   const facesStreet = streetLookup(roads);
   const collider = createCollider(buildings, [-10000, -10000, 10000, 10000]);
   for (const b of buildings) {
-    if (['和光', 'GINZA SIX', 'GINZA PLACE'].includes(b.name)) continue; // 實景參考立面自行處理橱窗。
+    if (MODELED_BUILDINGS.includes(b.name)) continue; // 實景參考立面自行處理橱窗。
     if ((b.base || 0) >= 2 || b.height < SHOP_TOP + 1) continue;
     for (const ring of b.outers) {
       for (let k = 0; k < ring.length; k++) {

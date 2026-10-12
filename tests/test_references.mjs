@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { applyReferences } from '../web/references.js';
 import { createCollider } from '../web/collision.js';
-import { SIX_NIGHT, PLACE_NIGHT } from '../web/photo-reference.js';
+import { SIX_NIGHT, PLACE_NIGHT, TOKYU_PLAZA, MODELED_BUILDINGS } from '../web/photo-reference.js';
 
 const original = JSON.parse(readFileSync(new URL('../web/assets/city.json', import.meta.url)));
 const before = JSON.stringify(original);
@@ -20,6 +20,14 @@ assert.equal(place.height, original.buildings.find((b) => b.id === place.id).hei
 assert.equal(place.reference, PLACE_NIGHT.source);
 assert.ok(!city.signs.some((s) => s.text === 'サッポロ銀座ビル'), '舊樓名不再生成虛構屋頂招牌');
 assert.ok(!city.signs.some((s) => s.kind === 'crown' && ['和光', 'GINZA SIX'].includes(s.text)), '不生成實景未證實的地標屋頂廣告');
+const tokyu = city.buildings.find((b) => b.id === TOKYU_PLAZA.osmId);
+assert.equal(tokyu.name, TOKYU_PLAZA.building);
+assert.equal(tokyu.height, TOKYU_PLAZA.wallHeight, '牆頂採竣工資料高度');
+assert.equal(original.buildings.find((b) => b.id === TOKYU_PLAZA.osmId).height, 66, '原始 OSM 最高高度不變');
+assert.equal(city.landmarks.find((l) => l.id === TOKYU_PLAZA.osmId).height, TOKYU_PLAZA.wallHeight);
+assert.ok(TOKYU_PLAZA.storefront < TOKYU_PLAZA.sash && TOKYU_PLAZA.sash + TOKYU_PLAZA.sashDepth < TOKYU_PLAZA.wallHeight, '立面分層順序');
+assert.ok(MODELED_BUILDINGS.includes(TOKYU_PLAZA.building));
+assert.ok(!city.signs.some((s) => s.text === TOKYU_PLAZA.building), '不在切子玻璃上加虛構燈箱');
 const collider = createCollider(city.buildings, city.bounds);
 for (const landmark of city.landmarks) {
   const view = collider.viewpointFor(landmark.target, landmark.id, landmark.height, 0.35);

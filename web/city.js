@@ -1,6 +1,6 @@
 // 由 city.json / roads.json 產生建築網格與地面貼圖。
 import * as THREE from 'three';
-import { SIX_NIGHT, PLACE_NIGHT } from './photo-reference.js';
+import { KABUKIZA, MITSUKOSHI, MODELED_BUILDINGS, SIX_NIGHT, PLACE_NIGHT, TOKYU_PLAZA } from './photo-reference.js';
 import { curbTriangles, isMajorRoad } from './road-markings.js';
 
 const FLOOR = 3.4;
@@ -76,7 +76,30 @@ function referenceTextures(name, height) {
   const rect = (ctx, x, bottom, width, meters) => ctx.fillRect(x, y(bottom + meters), width, meters / height * 1024);
   d.fillStyle = name === '和光' ? '#dedbd1' : '#b8c0c2'; d.fillRect(0, 0, 256, 1024);
   n.fillStyle = '#000'; n.fillRect(0, 0, 256, 1024);
-  if (name === '和光') {
+  if (name === KABUKIZA.building) {
+    // 側面與背面：白漆喰牆、細付柱；正面細部由 kabukiza.js 疊加。
+    d.fillStyle = '#efe9dd'; d.fillRect(0, 0, 256, 1024);
+    n.fillStyle = '#5a5246'; n.fillRect(0, 0, 256, 1024);
+    d.fillStyle = '#d9d3c6'; for (const x of [0, 128]) d.fillRect(x, 0, 10, 1024);
+    d.fillStyle = '#9da0a0'; rect(d, 0, height - 1.2, 256, 1.2);
+  } else if (name === KABUKIZA.tower) {
+    // 歌舞伎座タワー：白色縱向百葉覆蓋玻璃（照片構成），夜間百葉間透出冷色光。
+    d.fillStyle = '#5f7486'; d.fillRect(0, 0, 256, 1024);
+    n.fillStyle = '#1c3358'; n.fillRect(0, 0, 256, 1024);
+    for (let x = 0; x < 256; x += 16) {
+      d.fillStyle = '#e8ecee'; d.fillRect(x, 0, 11, 1024);
+      // 夜照：整面偏藍、百葉縫較亮，少數樓層暖光
+      n.fillStyle = (x / 16) % 5 === 2 ? '#7d93b8' : '#3e5c8c'; n.fillRect(x + 11, 0, 5, 1024);
+    }
+    n.fillStyle = '#8a8a7a'; for (let m = 7; m < height; m += 23) rect(n, 0, m, 256, 1.2);
+    d.fillStyle = '#c7ccd0'; for (let m = 0; m < height; m += 4.2) rect(d, 0, m, 256, 0.25);
+  } else if (name === TOKYU_PLAZA.building) {
+    paintTokyuPlaza(d, n, y, rect, height);
+  } else if (name === MITSUKOSHI.building) {
+    paintMitsukoshiMain(d, n, y, rect, height);
+  } else if (name === MITSUKOSHI.annex) {
+    paintMitsukoshiAnnex(d, n, rect, height);
+  } else if (name === '和光') {
     // 低層橱窗、狹長豎窗、頂層拱窗與青銅裝飾；取消通用格子樓與遮陽棚。
     d.fillStyle = '#4b5559'; rect(d, 50, 0.25, 156, 4.8);
     n.fillStyle = '#b6a283'; rect(n, 50, 0.25, 156, 4.8);
@@ -151,10 +174,103 @@ function referenceTextures(name, height) {
     const texture = new THREE.CanvasTexture(canvas);
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(1 / (name === '和光' ? 3.2 : name === 'GINZA PLACE' ? 12 : 9), 1 / height);
+    const span = { '和光': 3.2, 'GINZA PLACE': 12, [KABUKIZA.building]: 9, [KABUKIZA.tower]: 6, [TOKYU_PLAZA.building]: TOKYU_PLAZA.diamond.width * 4, [MITSUKOSHI.building]: 12, [MITSUKOSHI.annex]: 12 }[name] || 9;
+    texture.repeat.set(1 / span, 1 / height);
     texture.anisotropy = 8;
     return texture;
   });
+}
+
+// 東急プラザ銀座：江戸切子式立體菱形玻璃（每格左右兩片折面明暗不同）、低層店面帶、頂部黑色窗框帶。
+// 夜間：建築師說明為鋁豎框內燈具照亮玻璃，故菱形邊線發冷白光，低層透出暖色店內光。
+function paintTokyuPlaza(d, n, y, rect, height) {
+  const { storefront, sash, sashDepth } = TOKYU_PLAZA;
+  const column = 64; // 貼圖每 span 4 格菱形
+  // 菱形格：中心列錯半格；每格以豎向折線分成左右兩片，模擬 500 mm 深的立體折面。
+  const lattice = (bottom, top, diamondHeight, day, night) => {
+    const step = diamondHeight / 2;
+    for (const [ctx, faces, edge, width] of [[d, day, '#e2e9ee', 1], [n, night, '#8fb3e6', 2]]) {
+      ctx.save(); ctx.beginPath(); ctx.rect(0, y(top), 256, y(bottom) - y(top)); ctx.clip();
+      for (let row = 0; bottom + (row - 1) * step < top; row++) {
+        const cy = bottom + row * step;
+        for (let col = -1; col <= 4; col++) {
+          const cx = col * column + (row % 2 ? column / 2 : 0), shade = ((col + 1) * 7 + row * 3) % 5 / 10;
+          for (const side of [-1, 1]) {
+            ctx.fillStyle = faces[side < 0 ? 0 : 1](shade, cy / height);
+            ctx.beginPath(); ctx.moveTo(cx, y(cy + step)); ctx.lineTo(cx + side * column / 2, y(cy)); ctx.lineTo(cx, y(cy - step)); ctx.closePath(); ctx.fill();
+          }
+          ctx.strokeStyle = edge; ctx.lineWidth = width; ctx.beginPath();
+          ctx.moveTo(cx, y(cy + step)); ctx.lineTo(cx + column / 2, y(cy)); ctx.lineTo(cx, y(cy - step)); ctx.lineTo(cx - column / 2, y(cy)); ctx.closePath(); ctx.stroke();
+        }
+      }
+      ctx.restore();
+    }
+  };
+  // 照片：低鐵玻璃反射天空，整體銀灰偏藍、折面明暗差小
+  const sky = (light) => (shade, h) => `hsl(${206 + shade * 8}, ${14 + shade * 8}%, ${(light + h * 12 - shade * 6).toFixed(1)}%)`;
+  d.fillStyle = '#8a9aa8'; d.fillRect(0, 0, 256, 1024);
+  n.fillStyle = '#0d1828'; n.fillRect(0, 0, 256, 1024);
+  const glow = [() => '#18294a', () => '#101d36'];
+  lattice(storefront, sash, TOKYU_PLAZA.diamond.height, [sky(64), sky(52)], glow);
+  lattice(sash + sashDepth, height, (height - sash - sashDepth) * 2, [sky(66), sky(54)], glow);
+  // 夜照中下半部隔著玻璃透出店內暖光（連續樓層帶，不是辦公窗格）
+  n.fillStyle = 'rgba(170, 130, 86, 0.32)';
+  for (let m = storefront + 1.5; m < 30; m += 4.5) rect(n, 0, m, 256, 1.1);
+  d.fillStyle = n.fillStyle = '#121416'; rect(d, 0, sash, 256, sashDepth); rect(n, 0, sash, 256, sashDepth);
+  // 低層店面：各品牌門面材質交替（石材、深色玻璃、木格），不猜測具體品牌。
+  const bays = [['#d9d1c3', '#a98a62'], ['#2d353b', '#c9a676'], ['#8a6a4c', '#7d6650'], ['#3a4045', '#b99a72']];
+  bays.forEach(([day, night], i) => {
+    d.fillStyle = day; rect(d, i * 64 + 2, 0.2, 60, storefront - 0.6);
+    n.fillStyle = night; rect(n, i * 64 + 6, 0.4, 52, storefront - 1.4);
+    d.fillStyle = '#20272c'; rect(d, i * 64 + 14, 0.2, 36, 4.2); // 入口玻璃
+    n.fillStyle = '#2a2622'; for (const x of [22, 40]) rect(n, i * 64 + x, 0.4, 3, storefront - 1.4);
+  });
+  d.fillStyle = '#e9ebea'; rect(d, 0, storefront - 0.5, 256, 0.5);
+}
+
+// 銀座三越本館：低層石材拱窗帶、上方密排銀白豎鰭（全景照），頂部檐口；夜間豎鰭受投光、拱窗暖光。
+function paintMitsukoshiMain(d, n, y, rect, height) {
+  const { arcade } = MITSUKOSHI, cornice = height - 1.7;
+  d.fillStyle = '#b4bbbe'; d.fillRect(0, 0, 256, 1024);
+  n.fillStyle = '#3a3f42'; n.fillRect(0, 0, 256, 1024);
+  for (let x = 0; x < 256; x += 32) {
+    d.fillStyle = '#e1e3e2'; rect(d, x + 7, arcade, 18, cornice - arcade);
+    d.fillStyle = '#c6cbcd'; rect(d, x + 25, arcade, 3, cornice - arcade);
+    n.fillStyle = '#6e706b'; rect(n, x + 7, arcade, 18, cornice - arcade);
+  }
+  for (const [ctx, color] of [[d, '#cfcac0'], [n, '#5e5a52']]) { ctx.fillStyle = color; rect(ctx, 0, cornice, 256, 1.7); }
+  d.fillStyle = '#6d6a64'; rect(d, 0, cornice, 256, 0.25);
+  // 拱廊：每 4 m 一個圓頂窗
+  d.fillStyle = '#cdbfa8'; rect(d, 0, 0, 256, arcade);
+  n.fillStyle = '#4a4037'; rect(n, 0, 0, 256, arcade);
+  for (let x = 0; x < 256; x += 64) {
+    // 照片：石材柱間為展示櫥窗，非整片拱洞
+    for (const [ctx, color] of [[d, '#3a3f42'], [n, '#b48f62']]) {
+      ctx.fillStyle = color; ctx.beginPath();
+      ctx.roundRect(x + 14, y(6.2), 36, y(0.6) - y(6.2), [18, 18, 0, 0]); ctx.fill();
+    }
+    n.fillStyle = '#e6c08d'; rect(n, x + 18, 0.9, 28, 3.2);
+  }
+  d.fillStyle = '#b3a68f'; rect(d, 0, 7.2, 256, 0.35); rect(d, 0, arcade - 0.3, 256, 0.3);
+}
+
+// 銀座三越新館：31 m 以下白色板材與水平帶窗，以上玻璃帷幕（全景照與新館夜景）。
+function paintMitsukoshiAnnex(d, n, rect, height) {
+  const glassFrom = MITSUKOSHI.mainHeight;
+  d.fillStyle = '#e4e5e1'; d.fillRect(0, 0, 256, 1024);
+  n.fillStyle = '#26292b'; n.fillRect(0, 0, 256, 1024);
+  for (let m = 1; m < glassFrom - 2; m += 4.5) {
+    d.fillStyle = '#55687a'; rect(d, 12, m, 232, 1.6);
+    n.fillStyle = '#b89a73'; rect(n, 12, m, 232, 1.6);
+  }
+  d.fillStyle = '#7f95a6'; rect(d, 0, glassFrom, 256, height - glassFrom);
+  n.fillStyle = '#1d3350'; rect(n, 0, glassFrom, 256, height - glassFrom);
+  for (let m = glassFrom; m < height; m += 4.5) {
+    d.fillStyle = '#c8d0d5'; rect(d, 0, m, 256, 0.3);
+    n.fillStyle = '#c4d6e6'; rect(n, 0, m + 3.9, 256, 0.35); // 夜景：天花燈線
+  }
+  d.fillStyle = '#b5c2cb'; for (let x = 0; x < 256; x += 32) rect(d, x, glassFrom, 2, height - glassFrom);
+  d.fillStyle = '#d6d8d4'; rect(d, 0, height - 1, 256, 1);
 }
 
 function metalNightTexture() {
@@ -223,7 +339,7 @@ export function buildBuildings(buildings) {
     const tone = b.tone ?? 0.5;
     color.set(PALETTE[Math.floor(tone * PALETTE.length) % PALETTE.length]);
     color.offsetHSL(0, 0, (((tone * 37) % 1) - 0.5) * 0.06);
-    const referenced = ['和光', 'GINZA SIX', 'GINZA PLACE'].includes(b.name);
+    const referenced = MODELED_BUILDINGS.includes(b.name);
     if (referenced) {
       color.set('#ffffff');
       if (!referenceWalls.has(b.name)) referenceWalls.set(b.name, createBuffers());
@@ -243,7 +359,8 @@ export function buildBuildings(buildings) {
           const a = outer[k], q = outer[(k + 1) % outer.length];
           const length = Math.hypot(q[0] - a[0], q[1] - a[1]);
           if (length < 1) continue;
-          const levels = b.name === '和光' ? [7.2, 24.8, 29.9] : b.name === 'GINZA SIX' ? SIX_NIGHT.eaves : b.name === 'GINZA PLACE' ? PLACE_NIGHT.terraces.map((v) => v * b.height) : [b.height - 0.4];
+          const levels = b.name === '和光' ? [7.2, 24.8, 29.9] : b.name === 'GINZA SIX' ? SIX_NIGHT.eaves : b.name === 'GINZA PLACE' ? PLACE_NIGHT.terraces.map((v) => v * b.height)
+            : [KABUKIZA.building, KABUKIZA.tower, TOKYU_PLAZA.building, MITSUKOSHI.building, MITSUKOSHI.annex].includes(b.name) ? [] : [b.height - 0.4];
           if (!referenced && depth > 14) levels.push((b.base || 0) + 4.1);
           for (const y of levels) {
             if (y > b.height) continue;
@@ -272,7 +389,7 @@ export function buildBuildings(buildings) {
   for (const [name, buffers] of referenceWalls) {
     const [map, emissiveMap] = referenceTextures(name, referenceHeights.get(name));
     const material = new THREE.MeshStandardMaterial({ vertexColors: true, map, emissiveMap, emissive: '#ffffff', emissiveIntensity: 0, roughness: 0.78 });
-    material.userData.nightGain = name === 'GINZA SIX' ? SIX_NIGHT.glassGain : name === 'GINZA PLACE' ? PLACE_NIGHT.nightGain : 0.65;
+    material.userData.nightGain = name === 'GINZA SIX' ? SIX_NIGHT.glassGain : name === 'GINZA PLACE' ? PLACE_NIGHT.nightGain : name === KABUKIZA.tower ? 0.9 : name === TOKYU_PLAZA.building ? 1 : 0.65;
     referenceMaterials.push(material);
     group.add(toMesh(buffers, material));
   }

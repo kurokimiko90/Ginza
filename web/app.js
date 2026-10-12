@@ -11,6 +11,12 @@ import { planDecor } from './decor-layout.js';
 import { buildDecor } from './decor.js';
 import { planInfrastructure } from './infrastructure-layout.js';
 import { buildInfrastructure } from './infrastructure.js';
+import { planSignals } from './traffic-signals.js';
+import { planKabukiza } from './kabukiza-layout.js';
+import { buildKabukiza } from './kabukiza.js';
+import { splitMitsukoshi } from './mitsukoshi-layout.js';
+import { MITSUKOSHI } from './photo-reference.js';
+import { buildMitsukoshi } from './mitsukoshi.js';
 import { createStreetLighting } from './surface-lighting.js';
 import { applyReferences } from './references.js';
 import { fitCentralRoads } from './road-layout.js';
@@ -300,6 +306,8 @@ function updateTime(hour) {
   ctx.signage.setHour(hour);
   ctx.decor.setNight(night);
   ctx.infrastructure.setNight(night);
+  ctx.kabukiza.setNight(night);
+  ctx.mitsukoshi.setNight(night);
   ctx.surfaceLighting.setNight(night);
   ctx.nightFill.intensity = night * 0.8;
   for (const button of document.querySelectorAll('[data-hour]')) button.setAttribute('aria-pressed', String(Number(button.dataset.hour) === Number(hour)));
@@ -463,6 +471,7 @@ function loop() {
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     ctx.life.update(dt);
+    ctx.infrastructure.update(ctx.life.time);
     if (state.mode === 'walk') updateWalk(dt);
     else {
       if (state.fly) updateFly(dt);
@@ -514,7 +523,7 @@ function createControls(camera, renderer) {
 async function init() {
   const [rawCity, rawRoads] = await Promise.all([loadJSON('./assets/city.json'), loadJSON('./assets/roads.json')]);
   const roads = fitCentralRoads(rawRoads);
-  const city = applyReferences(rawCity);
+  const city = applyReferences(rawCity, roads);
   const renderer = createRenderer();
   const scene = new THREE.Scene();
   scene.fog = new THREE.Fog('#e7eff0', 650, 2800);
@@ -524,16 +533,21 @@ async function init() {
   const sky = createSky();
   const { group: buildingGroup, wallMaterial, referenceMaterials } = buildBuildings(city.buildings);
   const street = buildStreetscape(city.buildings, city.signs || [], roads);
-  const life = createLife(roads);
   const roadLayer = buildRoads(roads);
   const signage = buildSignage({ ...city, streetSigns: [] }); // 藍色名牌坐標未經實景核實；街名保留在 UI。
   const decorItems = planDecor(city, roads);
   const decor = buildDecor(decorItems);
   const infrastructureItems = planInfrastructure(city, roads, decorItems);
-  const infrastructure = buildInfrastructure(infrastructureItems);
+  const signalPlan = planSignals(roads, infrastructureItems);
+  const infrastructure = buildInfrastructure(infrastructureItems, signalPlan.poleAxes);
+  const life = createLife(roads, signalPlan);
   scene.add(sky.mesh, buildingGroup, buildGround(roads, city.buildings, city.bounds, renderer), street.group, life.group, roadLayer.group, signage.group);
   scene.add(decor.group);
   scene.add(infrastructure.group);
+  const kabukiza = buildKabukiza(planKabukiza(city.buildings, roads));
+  scene.add(kabukiza.group);
+  const mitsukoshi = buildMitsukoshi(splitMitsukoshi(rawCity.buildings.find((b) => b.id === MITSUKOSHI.osmId), roads));
+  scene.add(mitsukoshi.group);
   const surfaceLighting = createStreetLighting(city.bounds, infrastructureItems, city.signs || [], street.lightSources);
   surfaceLighting.attach(scene);
 
@@ -543,7 +557,7 @@ async function init() {
   minimap.height = mini.canvas.height;
 
   ctx = {
-    city, renderer, scene, camera, hemi, sun, nightFill, sky, wallMaterial, referenceMaterials, minimap, mini, street, life, roadLayer, signage, decor, infrastructure,
+    city, renderer, scene, camera, hemi, sun, nightFill, sky, wallMaterial, referenceMaterials, minimap, mini, street, life, roadLayer, signage, decor, infrastructure, kabukiza, mitsukoshi,
     surfaceLighting,
     namedRoads: roads.filter((r) => r.name && /通り|京浜/.test(r.name)),
     controls: createControls(camera, renderer),
